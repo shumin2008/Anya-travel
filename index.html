@@ -110,13 +110,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <input v-model="item.activity" class="font-black text-slate-700 bg-transparent border-none p-0 w-full text-lg focus:ring-0" placeholder="目的名稱">
-                    <div class="flex items-center gap-2 w-full mt-1">
-  <input v-model="item.location" class="text-[10px] text-slate-400 bg-transparent border-none p-0 flex-1 focus:ring-0" placeholder="地址或店名">
-  <button v-if="item.location && item.location.trim()" @click="openGoogleMap(item.location)" class="shrink-0 text-orange-400 hover:text-orange-600">
-    <i class="ph-bold ph-map-pin"></i>
-  </button>
-</div>
-
+                    <input v-model="item.location" class="text-[10px] text-slate-400 bg-transparent border-none p-0 w-full mt-1 focus:ring-0" placeholder="地址或店名">
                     <input v-model="item.note" class="text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 focus:ring-0 border-none" placeholder="備註: MapCode/網址/提醒">
                 </div>
 
