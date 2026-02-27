@@ -15,7 +15,8 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script><script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
 
     <style>
         :root { --shisa-orange: #FFB74D; --shisa-deep-orange: #E65100; --shisa-brown: #5D4037; }
@@ -95,29 +96,42 @@
                     <button v-else @click="toggleFlightCard" class="w-full py-3 border-2 border-dashed border-orange-200 rounded-2xl text-orange-300 flex items-center justify-center gap-2"><i class="ph-bold ph-airplane-tilt"></i> 新增當日航班</button>
                 </div>
 
-                <div class="relative pl-4 border-l-2 border-orange-200 space-y-6">
-                    <div v-for="(item, idx) in currentDay.items" :key="idx" class="handwritten-card p-4 group">
-                        <div class="flex gap-4 items-start">
-                            <div class="time-select-area flex flex-col gap-2">
-                                <input v-model="item.time" type="time" class="font-bold text-orange-700 bg-orange-50 rounded-lg p-1 text-sm border-none w-full text-center">
-                                <select v-model="item.type" class="text-[11px] font-bold text-orange-600 bg-orange-50 border-none rounded-lg py-1 px-2 w-full truncate">
-                                    <option value="spot">📍 景點</option>
-                                    <option value="food">🍴 美食</option>
-                                    <option value="hotel">🏨 住宿</option>
-                                </select>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <input v-model="item.activity" class="font-black text-slate-700 bg-transparent border-none p-0 w-full text-lg focus:ring-0" placeholder="目的名稱">
-                                <input v-model="item.location" class="text-[10px] text-slate-400 bg-transparent border-none p-0 w-full mt-1 focus:ring-0" placeholder="地址或店名">
-                                <input v-model="item.note" class="text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 focus:ring-0 border-none" placeholder="備註: MapCode/網址/提醒">
-                            </div>
-                            <div class="flex flex-col gap-3 shrink-0 items-center justify-between">
-                                <button @click="removeItem(idx)" class="text-red-200 hover:text-red-500 transition-colors"><i class="ph-bold ph-trash text-xl"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <button @click="addItem" class="text-orange-500 font-bold text-sm flex items-center gap-1"><i class="ph-bold ph-plus-circle"></i> 加入行程項目</button>
+               <div class="relative pl-4 border-l-2 border-orange-200 space-y-6">
+    <div ref="itineraryListEl" :key="currentDay.fullDate" class="space-y-6">
+        <div v-for="(item, idx) in currentDay.items" :key="idx" class="handwritten-card p-4 group">
+            <div class="flex gap-4 items-start">
+                <div class="time-select-area flex flex-col gap-2">
+                    <input v-model="item.time" type="time" class="font-bold text-orange-700 bg-orange-50 rounded-lg p-1 text-sm border-none w-full text-center">
+                    <select v-model="item.type" class="text-[11px] font-bold text-orange-600 bg-orange-50 border-none rounded-lg py-1 px-2 w-full truncate">
+                        <option value="spot">📍 景點</option>
+                        <option value="food">🍴 美食</option>
+                        <option value="hotel">🏨 住宿</option>
+                    </select>
                 </div>
+                <div class="flex-1 min-w-0">
+                    <input v-model="item.activity" class="font-black text-slate-700 bg-transparent border-none p-0 w-full text-lg focus:ring-0" placeholder="目的名稱">
+                    <input v-model="item.location" class="text-[10px] text-slate-400 bg-transparent border-none p-0 w-full mt-1 focus:ring-0" placeholder="地址或店名">
+                    <input v-model="item.note" class="text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 focus:ring-0 border-none" placeholder="備註: MapCode/網址/提醒">
+                </div>
+
+                <!-- ✅ 右側工具區：新增拖曳把手 -->
+                <div class="flex flex-col gap-3 shrink-0 items-center justify-between">
+                    <button class="drag-handle text-slate-200 hover:text-slate-400 transition-colors cursor-grab active:cursor-grabbing">
+                        <i class="ph-bold ph-dots-six-vertical text-xl"></i>
+                    </button>
+                    <button @click="removeItem(idx)" class="text-red-200 hover:text-red-500 transition-colors">
+                        <i class="ph-bold ph-trash text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button @click="addItem" class="text-orange-500 font-bold text-sm flex items-center gap-1">
+        <i class="ph-bold ph-plus-circle"></i> 加入行程項目
+    </button>
+</div>
+
             </div>
 
             <div v-if="viewMode === 'pack'" class="p-4 pb-24 text-sm">
@@ -201,7 +215,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const { createApp, ref, computed, watch, onMounted } = Vue;
+        const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
 
         createApp({
             setup() {
@@ -211,6 +225,31 @@
                 
                 const memoText = ref('');
 
+                const itineraryListEl = ref(null);
+let itinerarySortable = null;
+
+const initItinerarySortable = () => {
+    if (itinerarySortable) {
+        itinerarySortable.destroy();
+        itinerarySortable = null;
+    }
+    if (!itineraryListEl.value) return;
+    if (!currentDay.value || !Array.isArray(currentDay.value.items)) return;
+
+    itinerarySortable = new Sortable(itineraryListEl.value, {
+        animation: 150,
+        handle: '.drag-handle',
+        onEnd: (evt) => {
+            const { oldIndex, newIndex } = evt;
+            if (oldIndex === newIndex) return;
+            const arr = currentDay.value.items;
+            const moved = arr.splice(oldIndex, 1)[0];
+            arr.splice(newIndex, 0, moved);
+        }
+    });
+};
+
+                
                 const currentDay = computed(() => days.value[currentDayIdx.value] || {items:[], flight:null});
                 const participants = computed(() => participantsStr.value.split(',').map(s=>s.trim()).filter(s=>s));
                 const totalExpense = computed(() => expenses.value.reduce((sum, item) => item.currency === 'TWD' ? sum + (Number(item.amount) / setup.value.rate) : sum + Number(item.amount), 0));
@@ -292,6 +331,7 @@
                 };
 
                 onMounted(() => {
+                    nextTick(() => initItinerarySortable());
                     onValue(dbRef(db, 'shisa_trip_index'), (snapshot) => {
                         const index = snapshot.val();
                         if (index && index.length > 0) {
@@ -304,13 +344,14 @@
                 });
 
                 watch([days, expenses, packingList, setup, coupons, participantsStr, memoText], () => saveCurrentTripData(), { deep: true });
+watch(currentDayIdx, () => nextTick(() => initItinerarySortable()));
 
                 return { 
                     shisaLogo, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addDay, toggleFlightCard, 
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon,
-                    memoText, syncTripName
+                    memoText, syncTripName, itineraryListEl
                 };
             }
         }).mount('#app')
