@@ -217,7 +217,11 @@
                 const packingProgress = computed(() => packingList.value.length ? (packingList.value.filter(i=>i.checked).length/packingList.value.length)*100 : 0);
                 const paidByPerson = computed(() => { const map = {}; participants.value.forEach(p => map[p] = 0); expenses.value.forEach(e => { if(map[e.payer] !== undefined) map[e.payer] += (e.currency === 'TWD' ? (Number(e.amount) / setup.value.rate) : Number(e.amount)); }); return map; });
 
-                const addItem = () => currentDay.value.items.push({ time: '10:00', type: 'spot', activity: '', location: '', note: '' });
+                const addItem = () => {
+  if (!Array.isArray(currentDay.value.items)) currentDay.value.items = [];
+  currentDay.value.items.push({ time: '10:00', type: 'spot', activity: '', location: '', note: '' });
+};
+
                 const removeItem = (idx) => currentDay.value.items.splice(idx, 1);
                 const addDay = () => { const lastDay = new Date(days.value[days.value.length-1].fullDate); lastDay.setDate(lastDay.getDate() + 1); const mm = lastDay.getMonth()+1, dd = lastDay.getDate(); days.value.push({ date: `${mm}/${dd} (${['日','一','二','三','四','五','六'][lastDay.getDay()]})`, shortDate: `${mm}/${dd}`, fullDate: lastDay.toISOString().split('T')[0], items: [], flight: null }); };
                 const toggleFlightCard = () => currentDay.value.flight = { startTime: '11:16', number: '', endTime: '14:00' };
