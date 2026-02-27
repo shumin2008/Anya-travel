@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        :root { --shisa-orange: #FFB74D; --shisa-deep-orange: #E65100; --shisa-brown: #5D4037; }
+        :root { --shisa-orange: #FFB74D; --shisa-brown: #5D4037; }
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #f4f1ea; color: var(--shisa-brown); }
         .hide-scroll::-webkit-scrollbar { display: none; }
         .handwritten-card { background-color: white; border-radius: 2px 15px 5px 12px / 15px 5px 12px 2px !important; box-shadow: 2px 4px 12px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.03); }
@@ -45,7 +45,11 @@
             </div>
             
             <div class="flex items-center justify-around bg-white/20 p-2 border-t border-white/10">
-                <button v-for="m in ['plan', 'pack', 'map', 'coupons', 'money']" @click="viewMode = m" :class="viewMode === m ? 'bg-white text-orange-700 shadow-sm' : 'text-orange-900/50'" class="p-2 rounded-xl flex-1 mx-1 flex justify-center"><i :class="getIcon(m)" class="text-xl"></i></button>
+                <button @click="viewMode = 'plan'" :class="viewMode === 'plan' ? 'bg-white text-orange-700 shadow-sm' : 'text-orange-900/50'" class="p-2 rounded-xl flex-1 mx-1 flex justify-center"><i class="ph-bold ph-calendar-check text-xl"></i></button>
+                <button @click="viewMode = 'pack'" :class="viewMode === 'pack' ? 'bg-white text-orange-700 shadow-sm' : 'text-orange-900/50'" class="p-2 rounded-xl flex-1 mx-1 flex justify-center"><i class="ph-bold ph-suitcase-rolling text-xl"></i></button>
+                <button @click="viewMode = 'map'" :class="viewMode === 'map' ? 'bg-white text-orange-700 shadow-sm' : 'text-orange-900/50'" class="p-2 rounded-xl flex-1 mx-1 flex justify-center"><i class="ph-bold ph-map-trifold text-xl"></i></button>
+                <button @click="viewMode = 'coupons'" :class="viewMode === 'coupons' ? 'bg-white text-orange-700 shadow-sm' : 'text-orange-900/50'" class="p-2 rounded-xl flex-1 mx-1 flex justify-center"><i class="ph-bold ph-ticket text-xl"></i></button>
+                <button @click="viewMode = 'money'" :class="viewMode === 'money' ? 'bg-white text-orange-700 shadow-sm' : 'text-orange-900/50'" class="p-2 rounded-xl flex-1 mx-1 flex justify-center"><i class="ph-bold ph-currency-dollar text-xl"></i></button>
             </div>
 
             <div v-if="viewMode === 'plan' || viewMode === 'map'" class="flex overflow-x-auto hide-scroll px-3 py-2 space-x-3 snap-x">
@@ -59,22 +63,35 @@
         <main class="flex-1 overflow-y-auto relative hide-scroll bg-[#fdfaf5]">
             <div v-if="viewMode === 'plan'" class="p-4 pb-24">
                 <div class="handwritten-card p-4 mb-4 border-l-8 border-orange-400">
-                    <h2 class="text-2xl font-black">{{ currentDay.date || '選擇日期' }}</h2>
+                    <h2 class="text-2xl font-black text-slate-800">{{ currentDay.date }}</h2>
                     <input v-model="currentDay.title" class="text-sm bg-transparent border-none w-full p-0 font-bold focus:ring-0" placeholder="今天的計畫是..." @change="saveToCloud">
                 </div>
+
+                <div class="mb-6">
+                    <div v-if="currentDay.flight" class="relative bg-gradient-to-r from-blue-600 to-blue-400 rounded-2xl text-white shadow-lg p-4">
+                        <button @click="toggleFlightCard" class="absolute top-2 right-2 opacity-50"><i class="ph-bold ph-x"></i></button>
+                        <div class="flex justify-between items-center text-center">
+                            <div class="flex-1"><input v-model="currentDay.flight.startTime" type="time" class="text-2xl font-black bg-transparent border-none text-white w-full text-center p-0 font-mono" @change="saveToCloud"></div>
+                            <div class="flex-1 px-1"><i class="ph-fill ph-airplane rotate-90 text-xl"></i><input v-model="currentDay.flight.number" class="text-[10px] bg-transparent border-none text-center w-full uppercase" @change="saveToCloud"></div>
+                            <div class="flex-1"><input v-model="currentDay.flight.endTime" type="time" class="text-2xl font-black bg-transparent border-none text-white w-full text-center p-0 font-mono" @change="saveToCloud"></div>
+                        </div>
+                    </div>
+                    <button v-else @click="toggleFlightCard" class="w-full py-3 border-2 border-dashed border-orange-200 rounded-2xl text-orange-300 flex items-center justify-center gap-2"><i class="ph-bold ph-airplane-tilt"></i> 新增當日航班</button>
+                </div>
+
                 <div class="relative pl-4 border-l-2 border-orange-200 space-y-6">
                     <div v-for="(item, idx) in currentDay.items" :key="idx" class="handwritten-card p-4">
                         <div class="flex gap-4 items-start">
                             <div class="flex flex-col gap-2 shrink-0">
                                 <input v-model="item.time" type="time" class="font-bold text-orange-700 bg-orange-50 rounded-lg p-1 text-xs border-none" @change="saveToCloud">
-                                <select v-model="item.type" class="text-[11px] font-bold text-orange-600 bg-orange-50 border-none rounded-lg" @change="saveToCloud">
+                                <select v-model="item.type" class="text-[11px] font-bold text-orange-600 bg-orange-50 border-none rounded-lg py-1 px-2" @change="saveToCloud">
                                     <option value="spot">📍 景點</option><option value="food">🍴 美食</option><option value="hotel">🏨 住宿</option>
                                 </select>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <input v-model="item.activity" class="font-black text-slate-700 bg-transparent border-none p-0 w-full text-lg focus:ring-0" placeholder="景點名稱" @change="saveToCloud">
                                 <input v-model="item.location" class="text-[10px] text-slate-400 bg-transparent border-none p-0 w-full mt-1 focus:ring-0" placeholder="地址/MapCode" @change="saveToCloud">
-                                <input v-model="item.note" class="text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 border-none" placeholder="備註..." @change="saveToCloud">
+                                <input v-model="item.note" class="text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 border-none" placeholder="備註: 必吃/提醒" @change="saveToCloud">
                             </div>
                             <div class="flex flex-col gap-3">
                                 <a :href="getMapLink(item)" target="_blank" class="text-teal-500"><i class="ph-bold ph-paper-plane-tilt text-2xl"></i></a>
@@ -85,51 +102,52 @@
                     <button @click="addItem" class="text-orange-500 font-bold text-sm flex items-center gap-1"><i class="ph-bold ph-plus-circle"></i> 加入行程項目</button>
                 </div>
             </div>
-            </main>
 
-        <transition name="slide">
-            <div v-if="showTripMenu" class="fixed inset-0 z-50 flex">
-                <div class="bg-white w-4/5 max-w-xs h-full shadow-2xl flex flex-col p-6 relative z-50">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold uppercase">My Trips</h2>
-                        <button @click="showTripMenu = false"><i class="ph-bold ph-x text-xl text-slate-400"></i></button>
-                    </div>
-                    <button @click="openNewTripForm" class="w-full py-3 mb-6 border-2 border-dashed border-orange-400 text-orange-600 rounded-xl font-bold">+ 建立新旅程</button>
-                    <div class="flex-1 overflow-y-auto space-y-3">
-                        <div v-for="trip in allTrips" :key="trip.id" @click="switchTrip(trip.id)" class="p-4 rounded-xl border" :class="currentTripId === trip.id ? 'bg-orange-50 border-orange-500' : 'bg-slate-50 border-transparent cursor-pointer'">
-                            <div class="font-bold text-slate-800">{{ trip.destination || '未命名' }}</div>
-                            <div class="text-[10px] text-slate-400">{{ trip.startDate }} • {{ trip.daysCount }} 天</div>
-                        </div>
-                    </div>
+            <div v-if="viewMode === 'pack'" class="p-4 pb-24 text-sm">
+                <div class="bg-indigo-600 text-white rounded-3xl p-6 shadow-xl mb-4 relative overflow-hidden">
+                    <h2 class="text-2xl font-black relative z-10">行李清單</h2>
+                    <div class="mt-4 bg-white/20 rounded-full h-2 relative z-10"><div class="bg-white h-full" :style="{ width: packProgress + '%' }"></div></div>
                 </div>
-                <div class="flex-1 bg-black/50 backdrop-blur-sm z-40" @click="showTripMenu = false"></div>
+                <div class="handwritten-card p-4 flex gap-2 mb-4"><input v-model="newPackItem" @keyup.enter="addPack" placeholder="需要帶什麼？" class="flex-1 border-none bg-slate-50 rounded-xl px-4 py-3"><button @click="addPack" class="bg-indigo-500 text-white px-4 rounded-xl"><i class="ph-bold ph-plus"></i></button></div>
+                <div v-for="(item, idx) in packingList" :key="idx" class="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm mb-2" :class="item.checked ? 'opacity-50' : ''"><button @click="togglePack(idx)" :class="item.checked ? 'text-green-500' : 'text-slate-200'"><i class="ph-fill ph-check-circle text-2xl"></i></button><span class="flex-1 font-bold text-slate-700" :class="item.checked ? 'line-through' : ''">{{ item.name }}</span><button @click="delPack(idx)" class="text-red-100"><i class="ph-bold ph-trash text-lg"></i></button></div>
             </div>
-        </transition>
+
+            <div v-show="viewMode === 'map'" class="h-full relative">
+                <div id="map" class="w-full h-full bg-slate-200"></div>
+                <div class="absolute bottom-6 left-4 right-4 bg-white/90 p-4 rounded-2xl shadow-xl z-10 flex justify-between items-center border border-orange-100">
+                    <span class="font-black text-slate-700">📍 地圖標記點</span>
+                    <div class="flex gap-2"><button @click="initMap" class="p-3 bg-teal-500 text-white rounded-full"><i class="ph-bold ph-arrows-clockwise text-xl"></i></button><button @click="locate" class="p-3 bg-blue-500 text-white rounded-full"><i class="ph-bold ph-crosshair text-xl"></i></button></div>
+                </div>
+            </div>
+
+            <div v-if="viewMode === 'coupons'" class="p-4 pb-24 text-sm text-center">
+                <div class="bg-amber-500 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden"><h2 class="text-2xl font-black relative z-10">優惠券截圖</h2></div>
+                <div class="handwritten-card p-6 mb-6 border-2 border-dashed border-amber-200"><input type="file" id="coupon-upload" class="hidden" accept="image/*" @change="handleCouponUpload"><label for="coupon-upload" class="cursor-pointer flex flex-col items-center gap-2"><i class="ph-bold ph-cloud-arrow-up text-4xl text-amber-500"></i><span class="font-black text-amber-700 text-sm">新增優惠券截圖</span></label></div>
+                <div v-for="(coupon, idx) in coupons" :key="idx" class="handwritten-card overflow-hidden mb-4"><img :src="coupon.image" class="w-full"><div class="p-3 flex justify-between"><input v-model="coupon.note" class="flex-1 border-none focus:ring-0 text-sm font-bold" placeholder="備註..." @change="saveToCloud"><button @click="removeCoupon(idx)" class="text-red-200"><i class="ph-bold ph-trash text-lg"></i></button></div></div>
+            </div>
+
+            <div v-if="viewMode === 'money'" class="p-4 pb-24 text-sm">
+                <div class="bg-orange-500 text-white p-6 rounded-3xl shadow-xl mb-6 text-center relative overflow-hidden"><div class="text-sm font-bold opacity-80 uppercase">Total (JPY)</div><div class="text-4xl font-black">¥ {{ totalExpense.toLocaleString() }}</div></div>
+                <div class="handwritten-card p-4 mb-4"><input v-model="participantsStr" placeholder="成員 (我, 旅伴A)" class="w-full bg-slate-50 border-none rounded-xl mb-4 font-bold" @change="saveToCloud"><div class="flex flex-col gap-2"><input v-model="newExpense.item" placeholder="支出項目" class="bg-slate-50 border-none rounded-xl p-3 font-bold"><input v-model.number="newExpense.amount" type="number" placeholder="金額" class="bg-slate-50 border-none rounded-xl p-3 font-mono"><button @click="addExpense" class="bg-orange-500 text-white p-3 rounded-xl font-black">加入支出項目</button></div></div>
+                <div v-for="(exp, idx) in expenses" :key="idx" class="bg-white p-4 rounded-xl mb-2 shadow-sm flex justify-between items-center"><div class="font-bold text-slate-700">{{ exp.item }}</div><div class="flex items-center gap-4"><span class="font-black text-orange-600 font-mono text-lg">¥{{ exp.amount }}</span><button @click="removeExpense(idx)" class="text-red-200"><i class="ph-bold ph-trash text-xl"></i></button></div></div>
+            </div>
+        </main>
+
+        <transition name="slide"><div v-if="showTripMenu" class="fixed inset-0 z-50 flex"><div class="bg-white w-4/5 max-w-xs h-full shadow-2xl flex flex-col p-6 relative z-50"><div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold uppercase tracking-tighter">My Trips</h2><button @click="showTripMenu = false" class="text-slate-400"><i class="ph-bold ph-x text-2xl"></i></button></div><button @click="openNewTripForm" class="w-full py-4 mb-6 border-2 border-dashed border-orange-400 text-orange-600 rounded-2xl font-black">+ 建立新旅程</button><div class="flex-1 overflow-y-auto space-y-3 hide-scroll"><div v-for="trip in allTrips" :key="trip.id" @click="switchTrip(trip.id)" class="p-4 rounded-2xl border transition cursor-pointer" :class="currentTripId === trip.id ? 'bg-orange-50 border-orange-500 shadow-sm' : 'bg-slate-50 border-transparent'"><div class="font-black text-slate-800">{{ trip.destination || '未命名旅程' }}</div><div class="text-[10px] text-slate-400 mt-1 uppercase">{{ trip.startDate || '未設定日期' }} • {{ trip.daysCount }} 天</div></div></div></div><div class="flex-1 bg-black/50 backdrop-blur-sm z-40" @click="showTripMenu = false"></div></div></transition>
 
         <div v-if="showSetupModal" class="absolute inset-0 bg-orange-900/60 backdrop-blur-md z-50 flex items-center justify-center p-6 text-left">
-            <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl relative">
+            <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl relative">
                 <img src="https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg" class="w-16 mx-auto mb-4">
-                <h2 class="text-2xl font-black text-center mb-6 text-slate-800 uppercase tracking-tighter">開啟新旅程吧！</h2>
-                
+                <h2 class="text-2xl font-black text-center mb-8 text-slate-800 uppercase tracking-tighter">開啟新旅程！</h2>
                 <div class="space-y-4">
-                    <div>
-                        <label class="text-[10px] font-bold text-orange-400 ml-1 uppercase">Destination</label>
-                        <input v-model="setup.destination" placeholder="例如: Okinawa 沖繩" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 font-bold focus:ring-0">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="text-[10px] font-bold text-orange-400 ml-1 uppercase">Start Date</label>
-                            <input v-model="setup.startDate" type="date" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-xs">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-orange-400 ml-1 uppercase">Days</label>
-                            <input v-model.number="setup.days" type="number" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-center font-bold focus:ring-0">
-                        </div>
+                    <div><label class="text-[10px] font-black text-orange-400 ml-1 uppercase">Destination</label><input v-model="setup.destination" placeholder="例如: Okinawa 沖繩" class="w-full bg-slate-100 border-none rounded-2xl px-5 py-4 font-black focus:ring-0"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="text-[10px] font-black text-orange-400 ml-1 uppercase">Start Date</label><input v-model="setup.startDate" type="date" class="w-full bg-slate-100 border-none rounded-2xl px-4 py-4 text-xs font-bold"></div>
+                        <div><label class="text-[10px] font-black text-orange-400 ml-1 uppercase">Days</label><input v-model.number="setup.days" type="number" class="w-full bg-slate-100 border-none rounded-2xl px-5 py-4 text-center font-black focus:ring-0"></div>
                     </div>
                 </div>
-
-                <button @click="initTripWithDetails" class="w-full bg-orange-500 text-white font-black py-4 rounded-2xl shadow-lg mt-6 active:scale-95 transition uppercase tracking-widest">Start Journey!</button>
-                <button v-if="allTrips.length > 0" @click="showSetupModal = false" class="w-full mt-4 text-xs text-slate-400 uppercase text-center font-bold">Cancel</button>
+                <button @click="initTripWithDetails" class="w-full bg-orange-500 text-white font-black py-4 rounded-2xl shadow-lg mt-8 active:scale-95 transition uppercase tracking-widest text-lg">Start Journey!</button>
+                <button v-if="allTrips.length > 0" @click="showSetupModal = false" class="w-full mt-4 text-[10px] text-slate-400 uppercase text-center font-black tracking-widest">Cancel</button>
             </div>
         </div>
     </div>
@@ -152,34 +170,27 @@
             setup() {
                 const viewMode = ref('plan'), currentDayIdx = ref(0), isSyncing = ref(false), showTripMenu = ref(false), showSetupModal = ref(false);
                 const days = ref([]), setup = ref({ destination: '', startDate: '2026-02-27', days: 5, rate: 0.215 });
-                const expenses = ref([]), participantsStr = ref('我, 旅伴A'), packingList = ref([]), allTrips = ref([]), currentTripId = ref(null);
+                const expenses = ref([]), participantsStr = ref('我, 旅伴A'), packingList = ref([]), newPackItem = ref(''), coupons = ref([]), allTrips = ref([]), currentTripId = ref(null), newExpense = ref({item:'', amount:0});
                 
                 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
                 const db = firebase.database();
 
                 const listenCloud = (id) => {
                     if (!id) { showSetupModal.value = true; return; }
-                    currentTripId.value = id;
-                    localStorage.setItem('last_shisa_trip', id);
-                    showSetupModal.value = false;
+                    currentTripId.value = id; localStorage.setItem('last_shisa_trip', id); showSetupModal.value = false;
                     db.ref('trips/' + id).on('value', (s) => {
                         const d = s.val();
-                        if (d) {
-                            days.value = d.days || []; setup.value = d.setup || setup.value;
-                            expenses.value = d.expenses || []; packingList.value = d.packingList || [];
-                            participantsStr.value = d.participantsStr || '我, 旅伴A';
-                        }
+                        if (d) { days.value = d.days || []; setup.value = d.setup || setup.value; expenses.value = d.expenses || []; packingList.value = d.packingList || []; coupons.value = d.coupons || []; participantsStr.value = d.participantsStr || '我, 旅伴A'; }
                     });
-                    db.ref('trips').limitToLast(15).on('value', (s) => {
-                        const val = s.val();
-                        if(val) allTrips.value = Object.keys(val).map(key => ({ id: key, destination: val[key].setup?.destination, startDate: val[key].setup?.startDate, daysCount: val[key].days?.length || 0 })).reverse();
+                    db.ref('trips').limitToLast(20).on('value', (s) => {
+                        const val = s.val(); if(val) allTrips.value = Object.keys(val).map(key => ({ id: key, destination: val[key].setup?.destination, startDate: val[key].setup?.startDate, daysCount: val[key].days?.length || 0 })).reverse();
                     });
                 };
 
                 const saveToCloud = () => {
                     const id = currentTripId.value; if (!id) return;
                     isSyncing.value = true;
-                    db.ref('trips/' + id).set({ days: JSON.parse(JSON.stringify(days.value)), setup: JSON.parse(JSON.stringify(setup.value)), expenses: JSON.parse(JSON.stringify(expenses.value)), packingList: JSON.parse(JSON.stringify(packingList.value)), participantsStr: participantsStr.value, updateAt: Date.now() }).then(() => { setTimeout(() => isSyncing.value = false, 800); });
+                    db.ref('trips/' + id).set({ days: JSON.parse(JSON.stringify(days.value)), setup: JSON.parse(JSON.stringify(setup.value)), expenses: JSON.parse(JSON.stringify(expenses.value)), packingList: JSON.parse(JSON.stringify(packingList.value)), coupons: JSON.parse(JSON.stringify(coupons.value)), participantsStr: participantsStr.value, updateAt: Date.now() }).then(() => { setTimeout(() => isSyncing.value = false, 800); });
                 };
 
                 const initTripWithDetails = () => {
@@ -188,28 +199,41 @@
                     const start = new Date(setup.value.startDate);
                     const newDays = Array.from({length: setup.value.days}, (_, i) => {
                         const d = new Date(start); d.setDate(start.getDate() + i);
-                        return { date: `${d.getMonth()+1}/${d.getDate()} (${['日','一','二','三','四','五','六'][d.getDay()]})`, items: [] };
+                        return { date: `${d.getMonth()+1}/${d.getDate()} (${['日','一','二','三','四','五','六'][d.getDay()]})`, items: [], flight: null };
                     });
                     days.value = newDays;
                     const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?trip=' + newId;
                     window.history.pushState({ path: newUrl }, '', newUrl);
-                    currentTripId.value = newId;
-                    saveToCloud();
-                    showSetupModal.value = false;
+                    currentTripId.value = newId; saveToCloud(); showSetupModal.value = false;
                 };
 
                 const switchTrip = (id) => { const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?trip=' + id; window.history.pushState({ path: newUrl }, '', newUrl); listenCloud(id); showTripMenu.value = false; };
                 const openNewTripForm = () => { setup.value = { destination: '', startDate: '2026-02-27', days: 5, rate: 0.215 }; showSetupModal.value = true; showTripMenu.value = false; };
-                const currentDay = computed(() => days.value[currentDayIdx.value] || {items:[]});
+                const currentDay = computed(() => days.value[currentDayIdx.value] || {items:[], flight:null});
+                
                 const addItem = () => { currentDay.value.items.push({time:'10:00', type:'spot', activity:'', location:'', note:''}); saveToCloud(); };
                 const removeItem = (i) => { currentDay.value.items.splice(i, 1); saveToCloud(); };
-                const addDay = () => { days.value.push({date:'新增日期', items:[]}); saveToCloud(); };
-                const getIcon = (m) => ({plan:'ph-calendar-check', pack:'ph-suitcase-rolling', map:'ph-map-trifold', coupons:'ph-ticket', money:'ph-currency-dollar'}[m]);
+                const addDay = () => { days.value.push({date:'新增日期', items:[], flight:null}); saveToCloud(); };
+                const toggleFlightCard = () => { if(currentDay.value.flight) currentDay.value.flight = null; else currentDay.value.flight = {startTime:'11:00', endTime:'14:00', number:'BR198'}; saveToCloud(); };
+                const addPack = () => { if(newPackItem.value){ packingList.value.unshift({name:newPackItem.value, checked:false}); newPackItem.value=''; saveToCloud(); } };
+                const togglePack = (i) => { packingList.value[i].checked = !packingList.value[i].checked; saveToCloud(); };
+                const delPack = (i) => { packingList.value.splice(i, 1); saveToCloud(); };
+                const addExpense = () => { if(newExpense.value.item){ expenses.value.unshift({...newExpense.value}); newExpense.value={item:'', amount:0}; saveToCloud(); } };
+                const removeExpense = (i) => { expenses.value.splice(i, 1); saveToCloud(); };
+                const handleCouponUpload = (e) => { const r = new FileReader(); r.onload=(ev)=> { coupons.value.unshift({image:ev.target.result, note:''}); saveToCloud(); }; r.readAsDataURL(e.target.files[0]); };
+                const removeCoupon = (i) => { coupons.value.splice(i, 1); saveToCloud(); };
                 const getMapLink = (i) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(i.activity + ' ' + i.location)}`;
-                const copyShareLink = () => { navigator.clipboard.writeText(window.location.href).then(() => alert("同步連結已複製！")); };
+                const getIcon = (m) => ({plan:'ph-calendar-check', pack:'ph-suitcase-rolling', map:'ph-map-trifold', coupons:'ph-ticket', money:'ph-currency-dollar'}[m]);
+                const packProgress = computed(() => packingList.value.length ? (packingList.value.filter(i=>i.checked).length/packingList.value.length)*100 : 0);
+                const totalExpense = computed(() => expenses.value.reduce((s, i) => s + (Number(i.amount) || 0), 0));
+
+                let map = null;
+                const initMap = async () => { await nextTick(); if(map) map.remove(); map = L.map('map', {zoomControl:false}).setView([26.2124, 127.6809], 11); L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map); };
+                const locate = () => navigator.geolocation.getCurrentPosition(p => map?.flyTo([p.coords.latitude, p.coords.longitude], 15));
+                watch(viewMode, (v) => { if(v === 'map') initMap(); });
 
                 onMounted(() => listenCloud(new URLSearchParams(window.location.search).get('trip') || localStorage.getItem('last_shisa_trip')));
-                return { viewMode, currentDayIdx, days, currentDay, setup, isSyncing, showTripMenu, showSetupModal, allTrips, currentTripId, initTripWithDetails, switchTrip, openNewTripForm, copyShareLink, addItem, removeItem, addDay, getIcon, getMapLink, saveToCloud };
+                return { viewMode, currentDayIdx, days, currentDay, setup, isSyncing, showTripMenu, showSetupModal, allTrips, currentTripId, initTripWithDetails, switchTrip, openNewTripForm, copyShareLink, addItem, removeItem, addDay, toggleFlightCard, addPack, togglePack, delPack, newPackItem, packProgress, addExpense, removeExpense, expenses, newExpense, totalExpense, handleCouponUpload, removeCoupon, coupons, getMapLink, getIcon, initMap, locate, participantsStr };
             }
         }).mount('#app')
     </script>
