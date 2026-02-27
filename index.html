@@ -115,17 +115,28 @@
                 </div>
 
                 <!-- ✅ 右側工具區：新增拖曳把手 -->
-                <div class="flex flex-col gap-3 shrink-0 items-center justify-between">
-                    <button class="drag-handle text-slate-200 hover:text-slate-400 transition-colors cursor-grab active:cursor-grabbing">
-                        <i class="ph-bold ph-dots-six-vertical text-xl"></i>
-                    </button>
-                    <button @click="removeItem(idx)" class="text-red-200 hover:text-red-500 transition-colors">
-                        <i class="ph-bold ph-trash text-xl"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+                <div class="flex flex-col gap-3 shrink-0 items-center">
+  <!-- 小飛機：有地址才顯示 -->
+  <button
+    v-if="item.location && item.location.trim()"
+    @click="openGoogleMap(item.location)"
+    class="w-9 h-9 rounded-xl bg-teal-50 text-teal-500 hover:bg-teal-100 hover:text-teal-600 flex items-center justify-center shadow-sm"
+    title="在 Google Maps 開啟"
+  >
+    <i class="ph-bold ph-paper-plane-tilt text-lg"></i>
+  </button>
+
+  <!-- 拖曳把手 -->
+  <button class="drag-handle w-9 h-9 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 flex items-center justify-center cursor-grab active:cursor-grabbing">
+    <i class="ph-bold ph-dots-six-vertical text-lg"></i>
+  </button>
+
+  <!-- 刪除 -->
+  <button @click="removeItem(idx)" class="w-9 h-9 rounded-xl bg-rose-50 text-rose-300 hover:bg-rose-100 hover:text-rose-500 flex items-center justify-center">
+    <i class="ph-bold ph-trash text-lg"></i>
+  </button>
+</div>
+
 
     <button @click="addItem" class="text-orange-500 font-bold text-sm flex items-center gap-1">
         <i class="ph-bold ph-plus-circle"></i> 加入行程項目
