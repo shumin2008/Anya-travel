@@ -84,7 +84,11 @@
                         <button @click="currentDay.flight = null" class="absolute top-2 right-2 opacity-50"><i class="ph-bold ph-x"></i></button>
                         <div class="flex justify-between items-center text-center">
                             <div class="flex-1"><input v-model="currentDay.flight.startTime" type="time" class="text-2xl font-black bg-transparent border-none text-white w-full text-center p-0 font-mono"></div>
-                            <div class="flex-1 px-1"><i class="ph-fill ph-airplane rotate-90 text-xl"></i><div class="text-[10px] font-mono border-t border-white/30 mt-1 uppercase">{{ currentDay.flight.number }}</div></div>
+                            <div class="flex-1 px-1">
+                                <i class="ph-fill ph-airplane rotate-90 text-xl"></i>
+                                <!-- ✅ 這裡改成可手動輸入航班號 -->
+                                <input v-model="currentDay.flight.number" class="text-[10px] font-mono border-t border-white/30 mt-1 uppercase bg-transparent w-full text-center p-0 outline-none" placeholder="航班號">
+                            </div>
                             <div class="flex-1"><input v-model="currentDay.flight.endTime" type="time" class="text-2xl font-black bg-transparent border-none text-white w-full text-center p-0 font-mono"></div>
                         </div>
                     </div>
@@ -216,7 +220,7 @@
                 const addItem = () => currentDay.value.items.push({ time: '10:00', type: 'spot', activity: '', location: '', note: '' });
                 const removeItem = (idx) => currentDay.value.items.splice(idx, 1);
                 const addDay = () => { const lastDay = new Date(days.value[days.value.length-1].fullDate); lastDay.setDate(lastDay.getDate() + 1); const mm = lastDay.getMonth()+1, dd = lastDay.getDate(); days.value.push({ date: `${mm}/${dd} (${['日','一','二','三','四','五','六'][lastDay.getDay()]})`, shortDate: `${mm}/${dd}`, fullDate: lastDay.toISOString().split('T')[0], items: [], flight: null }); };
-                const toggleFlightCard = () => currentDay.value.flight = { startTime: '11:16', number: 'BR198', endTime: '14:00' };
+                const toggleFlightCard = () => currentDay.value.flight = { startTime: '11:16', number: '', endTime: '14:00' };
                 const addPackItem = () => { if(newItemName.value.trim()){ packingList.value.unshift({name: newItemName.value, checked: false}); newItemName.value = ''; } };
                 const removePackItem = (idx) => packingList.value.splice(idx, 1);
                 const addExpense = () => { if(newExpense.value.item && newExpense.value.amount && newExpense.value.payer){ expenses.value.unshift({...newExpense.value}); newExpense.value.item = ''; newExpense.value.amount = ''; } };
