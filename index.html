@@ -267,7 +267,7 @@
                     onValue(dbRef(db, 'trips/' + id), (snapshot) => {
                         const data = snapshot.val();
                         if (data) {
-                            days.value = data.days || [];
+                            days.value = (data.days || []).slice(0, 7);
                             expenses.value = data.expenses || [];
                             setup.value = data.setup || {};
                             packingList.value = data.packingList || [];
