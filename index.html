@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Anya x Shisa 旅遊手帳 v24</title>
+    <title>Anya x Shisa 旅遊手帳 v26</title>
     
     <link rel="apple-touch-icon" href="https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg">
     <link rel="icon" type="image/png" href="https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg">
@@ -12,15 +12,13 @@
     <meta name="theme-color" content="#FFB74D">
 
     <meta property="og:title" content="Anya x Shisa 旅遊手帳">
-    <meta property="og:description" content="2026 沖繩自駕遊：行程規劃、行李清單、備忘錄與預算管理。">
+    <meta property="og:description" content="2026 沖繩自駕遊：行程規劃、行李清單與預算。">
     <meta property="og:image" content="https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg">
-    <meta property="og:url" content="https://anya-travel.vercel.app/">
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vuedraggable/4.1.0/vuedraggable.umd.min.js"></script>
 
@@ -34,7 +32,7 @@
         .title-input:focus { outline: none; border-bottom: 2px dashed rgba(93, 64, 55, 0.3); }
         .memo-textarea { width: 100%; min-height: 450px; border: none; resize: none; background: transparent; line-height: 2; font-size: 15px; color: #4A5568; }
         .memo-paper { background-image: radial-gradient(#e5e7eb 1px, transparent 1px); background-size: 24px 24px; }
-        .drag-handle { cursor: grab; }
+        .drag-handle { cursor: grab; padding: 10px 5px; color: #FFB74D; }
         .drag-handle:active { cursor: grabbing; }
         .ghost-card { opacity: 0.3; background: #FFF3E0; border: 2px dashed #FFB74D; }
     </style>
@@ -46,14 +44,12 @@
         <header class="bg-[#FFB74D] text-[#5D4037] shrink-0 z-20 shadow-md">
             <div class="p-4 flex justify-between items-center">
                 <div class="flex items-center gap-3 flex-1 overflow-hidden">
-                    <div class="flex items-center gap-2 overflow-hidden flex-1">
-                        <div class="w-12 h-12 rounded-full bg-white border-2 border-orange-400 p-0.5 shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center">
-                            <img :src="shisaLogo" alt="獅薩" class="w-full h-full object-contain">
-                        </div>
-                        <div class="overflow-hidden flex-1">
-                            <input v-model="setup.destination" class="title-input" placeholder="旅程名稱" @change="syncTripName">
-                            <p class="text-[10px] font-bold opacity-60 uppercase truncate">Happy Trip with Shisa!</p>
-                        </div>
+                    <div class="w-12 h-12 rounded-full bg-white border-2 border-orange-400 p-0.5 shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        <img :src="shisaLogo" alt="獅薩" class="w-full h-full object-contain">
+                    </div>
+                    <div class="overflow-hidden flex-1">
+                        <input v-model="setup.destination" class="title-input" placeholder="旅程名稱" @change="syncTripName">
+                        <p class="text-[10px] font-bold opacity-60 uppercase truncate">Happy Trip with Shisa!</p>
                     </div>
                 </div>
                 
@@ -84,7 +80,7 @@
                     <input v-model="currentDay.title" class="text-sm text-slate-400 bg-transparent border-none w-full p-0 focus:ring-0 font-bold" placeholder="今天的計畫是...">
                 </div>
 
-                <div class="mb-6" v-if="currentDay">
+                <div class="mb-6">
                     <div v-if="currentDay.flight" class="relative bg-gradient-to-r from-blue-600 to-blue-400 rounded-2xl text-white shadow-lg p-4">
                         <button @click="currentDay.flight = null" class="absolute top-2 right-2 opacity-50"><i class="ph-bold ph-x"></i></button>
                         <div class="flex justify-between items-center text-center">
@@ -94,7 +90,7 @@
                             </div>
                             <div class="flex-1 px-1">
                                 <i class="ph-fill ph-airplane rotate-90 text-xl"></i>
-                                <input v-model="currentDay.flight.number" class="text-[10px] font-mono border-t border-white/30 mt-1 uppercase bg-transparent border-none text-white w-full text-center p-0 focus:ring-0" placeholder="編號">
+                                <input v-model="currentDay.flight.number" class="text-[10px] font-mono border-t border-white/30 mt-1 uppercase bg-transparent border-none text-white w-full text-center p-0 focus:ring-0" placeholder="航班號">
                             </div>
                             <div class="flex-1">
                                 <input v-model="currentDay.flight.endTime" type="time" class="text-2xl font-black bg-transparent border-none text-white w-full text-center p-0 font-mono focus:ring-0">
@@ -108,15 +104,15 @@
                 <div class="relative pl-4 border-l-2 border-orange-200">
                     <draggable 
                         v-model="currentDay.items" 
-                        handle=".drag-handle"
-                        item-key="id"
-                        ghost-class="ghost-card"
+                        handle=".drag-handle" 
+                        item-key="id" 
+                        ghost-class="ghost-card" 
                         class="space-y-6"
                     >
                         <template #item="{element, index}">
                             <div class="handwritten-card p-4 group relative">
                                 <div class="flex gap-4 items-start">
-                                    <div class="drag-handle absolute -left-7 top-1/2 -translate-y-1/2 text-orange-300">
+                                    <div class="drag-handle absolute -left-7 top-1/2 -translate-y-1/2">
                                         <i class="ph-bold ph-dots-six-vertical text-xl"></i>
                                     </div>
                                     <div class="flex flex-col gap-2 w-24 shrink-0">
@@ -130,9 +126,9 @@
                                     <div class="flex-1 min-w-0">
                                         <input v-model="element.activity" class="font-black text-slate-700 bg-transparent border-none p-0 w-full text-lg focus:ring-0" placeholder="目的地名稱">
                                         <input v-model="element.location" class="text-[10px] text-slate-400 bg-transparent border-none p-0 w-full mt-1 focus:ring-0" placeholder="地址/MapCode">
-                                        <input v-model="element.note" class="text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 focus:ring-0 border-none" placeholder="備註...">
+                                        <input v-model="element.note" class="text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 focus:ring-0 border-none" placeholder="備註或連結...">
                                     </div>
-                                    <div class="flex flex-col gap-3 shrink-0 items-center justify-between h-full">
+                                    <div class="flex flex-col gap-3 shrink-0 items-center justify-between">
                                         <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(element.activity + ' ' + element.location)" target="_blank" class="text-teal-500 hover:text-teal-700">
                                             <i class="ph-bold ph-paper-plane-tilt text-2xl"></i>
                                         </a>
@@ -169,38 +165,25 @@
             </div>
 
             <div v-if="viewMode === 'coupons'" class="p-4 pb-24 text-sm text-center">
-                <div class="bg-amber-500 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden"><i class="ph-fill ph-ticket absolute -right-4 -bottom-4 text-9xl opacity-10"></i><h2 class="text-2xl font-black relative z-10">優惠券截圖</h2></div>
-                <div class="handwritten-card p-6 mb-6 border-2 border-dashed border-amber-200"><input type="file" id="coupon-upload" class="hidden" accept="image/*" @change="handleCouponUpload"><label for="coupon-upload" class="cursor-pointer flex flex-col items-center gap-2"><i class="ph-bold ph-cloud-arrow-up text-4xl text-amber-500"></i><span class="font-black text-amber-700 text-sm">新增優惠券截圖</span></label></div>
-                <div class="grid grid-cols-1 gap-4"><div v-for="(coupon, idx) in coupons" :key="idx" class="handwritten-card overflow-hidden"><img :src="coupon.image" class="w-full h-auto object-cover"><div class="p-3 flex justify-between bg-amber-50/30"><input v-model="coupon.note" class="flex-1 bg-transparent border-none p-0 text-sm font-bold text-amber-900 focus:ring-0 text-left" placeholder="備註..."><button @click="removeCoupon(idx)" class="text-red-200 hover:text-red-500"><i class="ph-bold ph-trash-simple text-lg"></i></button></div></div></div>
+                <div class="bg-amber-500 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden"><i class="ph-fill ph-ticket absolute -right-4 -bottom-4 text-9xl opacity-10"></i><h2 class="text-2xl font-black relative z-10">優惠券</h2></div>
+                <div class="handwritten-card p-6 mb-6 border-2 border-dashed border-amber-200"><input type="file" id="cup" class="hidden" @change="handleCouponUpload"><label for="cup" class="cursor-pointer flex flex-col items-center gap-2"><i class="ph-bold ph-cloud-arrow-up text-4xl text-amber-500"></i><span class="font-black text-amber-700 text-sm">新增截圖</span></label></div>
+                <div class="grid grid-cols-1 gap-4"><div v-for="(c, idx) in coupons" :key="idx" class="handwritten-card overflow-hidden"><img :src="c.image" class="w-full"><div class="p-3 flex justify-between bg-amber-50/30"><input v-model="c.note" class="flex-1 bg-transparent border-none p-0 text-sm font-bold text-amber-900 focus:ring-0" placeholder="備註..."><button @click="removeCoupon(idx)" class="text-red-200"><i class="ph-bold ph-trash-simple text-lg"></i></button></div></div></div>
             </div>
 
             <div v-if="viewMode === 'money'" class="p-4 pb-24 text-sm">
                 <div class="bg-orange-500 text-white p-6 rounded-3xl shadow-xl mb-6 text-center relative overflow-hidden">
                     <div class="absolute top-2 right-4 flex flex-col items-end"><label class="text-[9px] font-bold opacity-60 uppercase">匯率</label><input v-model.number="setup.rate" type="number" step="0.001" class="w-16 bg-white/20 text-white text-xs rounded px-1 text-right border-none focus:ring-0 font-mono"></div>
-                    <div class="text-sm font-bold opacity-80 uppercase tracking-widest">Total (JPY)</div>
                     <div class="text-4xl font-black font-mono">¥ {{ totalExpense.toLocaleString() }}</div>
                     <div class="text-lg font-bold text-orange-100 mt-1">≈ NT$ {{ Math.round(totalExpense * setup.rate).toLocaleString() }}</div>
                 </div>
-
                 <div class="handwritten-card p-4 mb-4">
-                    <div class="text-[10px] font-bold text-orange-400 mb-2 uppercase">成員管理</div>
-                    <input v-model="participantsStr" placeholder="例如: 我, 旅伴A" class="w-full bg-slate-50 border-none rounded-xl text-sm px-4 py-2 font-bold mb-4 focus:ring-0">
-                    <div class="grid grid-cols-2 gap-2"><div v-for="p in participants" :key="p" class="bg-orange-50 p-2 rounded-xl text-center border border-orange-100"><div class="text-[9px] font-bold text-orange-400 opacity-60">{{ p }} 已墊付</div><div class="font-black text-orange-600 font-mono text-sm">¥{{ (paidByPerson[p] || 0).toLocaleString() }}</div></div></div>
+                    <input v-model="participantsStr" placeholder="成員: 我, 旅伴A" class="w-full bg-slate-50 border-none rounded-xl text-sm px-4 py-2 font-bold focus:ring-0">
                 </div>
-
-                <div class="handwritten-card p-4 mb-4">
-                    <div class="flex flex-col gap-3">
-                        <div class="flex gap-2"><input v-model="newExpense.date" type="date" class="flex-1 bg-slate-50 border-none rounded-xl text-xs px-2 py-3 font-bold">
-                            <div class="flex bg-slate-100 p-1 rounded-xl shadow-inner">
-                                <button @click="newExpense.currency = 'JPY'" :class="newExpense.currency === 'JPY' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400'" class="px-3 py-1 text-xs font-black rounded-lg transition-all">¥</button>
-                                <button @click="newExpense.currency = 'TWD'" :class="newExpense.currency === 'TWD' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-400'" class="px-3 py-1 text-xs font-black rounded-lg transition-all">$</button>
-                            </div>
-                        </div>
-                        <div class="flex gap-2 text-sm"><input v-model="newExpense.item" placeholder="支出項目" class="flex-1 bg-slate-50 border-none rounded-xl px-4 py-3"><input v-model.number="newExpense.amount" type="number" placeholder="金額" class="w-24 bg-slate-50 border-none rounded-xl px-3 py-3 font-mono text-center"></div>
-                        <div class="flex gap-2 text-sm"><select v-model="newExpense.payer" class="flex-1 bg-slate-50 border-none rounded-xl px-4 py-3 font-bold"><option value="" disabled>誰付錢？</option><option v-for="p in participants" :value="p">{{ p }}</option></select><button @click="addExpense" class="bg-orange-500 text-white font-black px-6 py-3 rounded-xl shadow-md active:scale-95 transition">加入</button></div>
-                    </div>
+                <div class="handwritten-card p-4 mb-4 flex flex-col gap-3">
+                    <div class="flex gap-2"><input v-model="newExpense.item" placeholder="支出項目" class="flex-1 bg-slate-50 border-none rounded-xl px-4 py-2"><input v-model.number="newExpense.amount" type="number" placeholder="金額" class="w-24 bg-slate-50 border-none rounded-xl px-3 py-2 text-center"></div>
+                    <button @click="addExpense" class="bg-orange-500 text-white font-black py-3 rounded-xl shadow-md">加入</button>
                 </div>
-                <div class="space-y-2"><div v-for="(exp, idx) in expenses" :key="idx" class="flex justify-between items-center bg-white px-4 py-3 rounded-xl shadow-sm border border-slate-50 text-left"><div class="flex flex-col"><div class="flex items-center gap-2"><span class="text-[9px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">{{ exp.date }}</span><span class="font-bold text-slate-700 text-sm">{{ exp.item }}</span></div><span class="text-[10px] text-orange-600 font-bold bg-orange-50 px-1.5 py-0.5 rounded w-fit mt-1 uppercase">Payer: {{ exp.payer }}</span></div><div class="flex items-center gap-3"><div class="text-right"><div class="font-mono font-black text-orange-600">{{ exp.currency === 'JPY' ? '¥' : 'NT$' }}{{ exp.amount.toLocaleString() }}</div></div><button @click="removeExpense(idx)" class="text-red-100 hover:text-red-400 transition-colors"><i class="ph-bold ph-trash text-lg"></i></button></div></div></div>
+                <div class="space-y-2"><div v-for="(exp, idx) in expenses" :key="idx" class="flex justify-between items-center bg-white px-4 py-3 rounded-xl shadow-sm"><div class="flex flex-col"><span class="font-bold text-slate-700">{{ exp.item }}</span><span class="text-[10px] text-orange-600 font-bold uppercase">Payer: {{ exp.payer }}</span></div><div class="flex items-center gap-3"><span class="font-mono font-black text-orange-600">¥{{ exp.amount.toLocaleString() }}</span><button @click="removeExpense(idx)" class="text-red-100 hover:text-red-400 transition-colors"><i class="ph-bold ph-trash text-lg"></i></button></div></div></div>
             </div>
         </main>
         
@@ -224,7 +207,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref as dbRef, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Anya 的 Firebase 配置
+        // Firebase 配置
         const firebaseConfig = {
             apiKey: "AIzaSyBjeYJPSMXhoprXnSVIWLW8Tx65-CjhEFs",
             authDomain: "anya-travel.firebaseapp.com",
@@ -238,61 +221,55 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
         const { createApp, ref, computed, watch, onMounted } = Vue;
 
         createApp({
             components: { 'draggable': window.vuedraggable },
             setup() {
                 const shisaLogo = ref("https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg");
-                const viewMode = ref('plan'), currentDayIdx = ref(0), showSetupModal = ref(false), tripList = ref([]), currentTripId = ref(null);
-                const days = ref([]), setup = ref({ destination: '沖繩 Okinawa', startDate: '2026-04-25', days: 7, rate: 0.215 }), expenses = ref([]), participantsStr = ref('我, 旅伴A'), newItemName = ref(''), packingList = ref([]), coupons = ref([]), newExpense = ref({ item: '', amount: '', payer: '', date: new Date().toISOString().split('T')[0], currency: 'JPY' });
-                const memoText = ref('');
+                const viewMode = ref('plan'), currentDayIdx = ref(0), showSetupModal = ref(false), currentTripId = ref(null);
+                const days = ref([]), setup = ref({ destination: '沖繩 Okinawa', startDate: '2026-04-25', days: 7, rate: 0.215 }), expenses = ref([]), participantsStr = ref('我, 旅伴A'), packingList = ref([]), coupons = ref([]), memoText = ref(''), newItemName = ref(''), newExpense = ref({ item: '', amount: '', payer: '我' });
 
-                // 自動計算目前的日期物件
+                // 修復：動態計算目前的日期，並確保 items 陣列存在
                 const currentDay = computed(() => {
-                    if (days.value.length > 0 && days.value[currentDayIdx.value]) {
-                        return days.value[currentDayIdx.value];
+                    const day = days.value[currentDayIdx.value];
+                    if (day) {
+                        if (!day.items) day.items = [];
+                        return day;
                     }
                     return { items: [], flight: null, date: '', title: '' };
                 });
 
-                const participants = computed(() => participantsStr.value.split(',').map(s=>s.trim()).filter(s=>s));
-                const totalExpense = computed(() => expenses.value.reduce((sum, item) => item.currency === 'TWD' ? sum + (Number(item.amount) / setup.value.rate) : sum + Number(item.amount), 0));
+                const totalExpense = computed(() => expenses.value.reduce((sum, item) => sum + Number(item.amount), 0));
                 const packingProgress = computed(() => packingList.value.length ? (packingList.value.filter(i=>i.checked).length/packingList.value.length)*100 : 0);
-                const paidByPerson = computed(() => { const map = {}; participants.value.forEach(p => map[p] = 0); expenses.value.forEach(e => { if(map[e.payer] !== undefined) map[e.payer] += (e.currency === 'TWD' ? (Number(e.amount) / setup.value.rate) : Number(e.amount)); }); return map; });
 
+                // 行程操作 (修復新增功能)
                 const addItem = () => {
-                    if (!currentDay.value.items) currentDay.value.items = [];
-                    currentDay.value.items.push({ 
-                        id: 'item_' + Date.now() + Math.random().toString(36).substr(2, 5),
-                        time: '10:00', 
-                        type: 'spot', 
-                        activity: '', 
-                        location: '', 
-                        note: '' 
-                    });
+                    const day = days.value[currentDayIdx.value];
+                    if (day) {
+                        if (!day.items) day.items = [];
+                        day.items.push({ 
+                            id: 'item_' + Date.now() + Math.random().toString(36).substr(2, 5),
+                            time: '12:00', 
+                            type: 'spot', 
+                            activity: '', 
+                            location: '', 
+                            note: '' 
+                        });
+                    }
                 };
-                
                 const removeItem = (idx) => currentDay.value.items.splice(idx, 1);
-                
-                const addFlight = () => {
-                    currentDay.value.flight = { startTime: '10:00', number: 'BR198', endTime: '12:30' };
-                };
+                const addFlight = () => currentDay.value.flight = { startTime: '10:00', number: 'BR198', endTime: '12:30' };
 
+                // 其他功能
                 const addPackItem = () => { if(newItemName.value.trim()){ packingList.value.unshift({name: newItemName.value, checked: false}); newItemName.value = ''; } };
                 const removePackItem = (idx) => packingList.value.splice(idx, 1);
-                const addExpense = () => { if(newExpense.value.item && newExpense.value.amount && newExpense.value.payer){ expenses.value.unshift({...newExpense.value}); newExpense.value.item = ''; newExpense.value.amount = ''; } };
+                const addExpense = () => { if(newExpense.value.item && newExpense.value.amount){ expenses.value.unshift({...newExpense.value, payer: participantsStr.value.split(',')[0].trim()}); newExpense.value.item = ''; newExpense.value.amount = ''; } };
                 const removeExpense = (idx) => expenses.value.splice(idx, 1);
                 const handleCouponUpload = (e) => { const reader = new FileReader(); reader.onload = (ev) => coupons.value.unshift({ image: ev.target.result, note: '' }); if (e.target.files[0]) reader.readAsDataURL(e.target.files[0]); };
                 const removeCoupon = (idx) => { if(confirm('確定刪除？')) coupons.value.splice(idx, 1); };
 
-                const syncTripName = () => {
-                    const trip = tripList.value.find(t => t.id === currentTripId.value);
-                    if(trip) trip.destination = setup.value.destination;
-                    set(dbRef(db, 'shisa_trip_index'), tripList.value);
-                };
-
+                // Firebase 同步與資料救援
                 const saveCurrentTripData = () => {
                     if (!currentTripId.value) return;
                     set(dbRef(db, 'trips/' + currentTripId.value), {
@@ -301,8 +278,8 @@
                         setup: JSON.parse(JSON.stringify(setup.value)),
                         packingList: JSON.parse(JSON.stringify(packingList.value)),
                         coupons: JSON.parse(JSON.stringify(coupons.value)),
-                        participantsStr: participantsStr.value,
-                        memoText: memoText.value
+                        memoText: memoText.value,
+                        participantsStr: participantsStr.value
                     });
                 };
 
@@ -311,68 +288,50 @@
                     onValue(dbRef(db, 'trips/' + id), (snapshot) => {
                         const data = snapshot.val();
                         if (data) {
-                            // 自動修復 ID 邏輯，確保舊行程也能拉動
-                            if (data.days) {
-                                data.days.forEach(day => {
-                                    if (day.items) {
-                                        day.items.forEach(item => {
-                                            if (!item.id) item.id = 'item_' + Math.random().toString(36).substr(2, 9);
-                                        });
-                                    }
-                                });
-                            }
-                            days.value = data.days || [];
+                            // 1. 強制過濾掉多餘的天數 (只保留 7 天)
+                            let loadedDays = data.days || [];
+                            if (loadedDays.length > 7) loadedDays = loadedDays.slice(0, 7);
+                            
+                            // 2. 資料救援：補齊拖拽所需的 ID
+                            loadedDays.forEach(d => {
+                                if (d.items) d.items.forEach(i => { if(!i.id) i.id = 'r_' + Math.random().toString(36).substr(2, 5); });
+                            });
+
+                            days.value = loadedDays;
                             expenses.value = data.expenses || [];
-                            setup.value = data.setup || {};
+                            setup.value = data.setup || setup.value;
                             packingList.value = data.packingList || [];
                             coupons.value = data.coupons || [];
-                            participantsStr.value = data.participantsStr || '我, 旅伴A';
                             memoText.value = data.memoText || '';
+                            participantsStr.value = data.participantsStr || '我, 旅伴A';
                         }
-                    });
+                    }, { onlyOnce: true });
                 };
 
                 const initTrip = () => {
                     if(!setup.value.destination) return alert('請輸入目的地');
                     const newId = 'shisa_' + Date.now().toString(36), start = new Date(setup.value.startDate);
-                    const newDays = Array.from({length: setup.value.days}, (_, i) => { 
-                        const d = new Date(start); 
-                        d.setDate(start.getDate() + i); 
-                        return { 
-                            date: `${d.getMonth()+1}/${d.getDate()} (${['日','一','二','三','四','五','六'][d.getDay()]})`, 
-                            shortDate: `${d.getMonth()+1}/${d.getDate()}`, 
-                            fullDate: d.toISOString().split('T')[0], 
-                            items: [], 
-                            flight: null 
-                        }; 
+                    // 預設建立 7 天行程
+                    days.value = Array.from({length: 7}, (_, i) => { 
+                        const d = new Date(start); d.setDate(start.getDate() + i); 
+                        return { date: `${d.getMonth()+1}/${d.getDate()} (${['日','一','二','三','四','五','六'][d.getDay()]})`, shortDate: `${d.getMonth()+1}/${d.getDate()}`, fullDate: d.toISOString().split('T')[0], items: [], flight: null }; 
                     });
-                    tripList.value = [{ id: newId, destination: setup.value.destination }];
-                    set(dbRef(db, 'shisa_trip_index'), tripList.value);
-                    currentTripId.value = newId; days.value = newDays; expenses.value = []; packingList.value = []; coupons.value = []; memoText.value = ''; showSetupModal.value = false;
+                    set(dbRef(db, 'shisa_trip_index'), [{ id: newId, destination: setup.value.destination }]);
+                    currentTripId.value = newId; showSetupModal.value = false; saveCurrentTripData();
                 };
 
                 onMounted(() => {
                     onValue(dbRef(db, 'shisa_trip_index'), (snapshot) => {
                         const index = snapshot.val();
                         if (index && index.length > 0) {
-                            tripList.value = index;
-                            if (!currentTripId.value) switchTrip(tripList.value[0].id);
-                        } else {
-                            showSetupModal.value = true;
-                        }
+                            if (!currentTripId.value) switchTrip(index[0].id);
+                        } else { showSetupModal.value = true; }
                     });
                 });
 
                 watch([days, expenses, packingList, setup, coupons, memoText, participantsStr], () => saveCurrentTripData(), { deep: true });
 
-                return { 
-                    shisaLogo, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addFlight,
-                    setup, showSetupModal, initTrip, memoText, packingProgress, totalExpense,
-                    newItemName, addPackItem, removePackItem, packingList, 
-                    coupons, handleCouponUpload, removeCoupon, 
-                    participantsStr, participants, paidByPerson,
-                    newExpense, addExpense, removeExpense, syncTripName
-                };
+                return { shisaLogo, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addFlight, setup, showSetupModal, initTrip, memoText, packingProgress, totalExpense, newItemName, addPackItem, removePackItem, packingList, coupons, handleCouponUpload, removeCoupon, participantsStr, newExpense, addExpense, removeExpense, syncTripName: () => {} };
             }
         }).mount('#app')
     </script>
