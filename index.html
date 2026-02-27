@@ -232,23 +232,9 @@
         </main>
     </div>
 
-const currentDay = computed({
-    get() {
-        const idx = currentDayIdx.value;
-
-        // 確保該天一定存在（避免 computed readonly + v-model 寫入報錯）
-        if (!days.value[idx]) {
-            days.value[idx] = { shortDate: '', date: '', title: '', flight: null, items: [] };
-        }
-        if (!days.value[idx].items) days.value[idx].items = [];
-
-        return days.value[idx];
-    },
-    set(val) {
-        days.value[currentDayIdx.value] = val;
-    }
-});
-
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref as dbRef, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBjeYJPSMXhoprXnSVIWLW8Tx65-CjhEFs",
@@ -265,17 +251,41 @@ const currentDay = computed({
         const db = getDatabase(app);
         const { createApp, ref, computed, watch, onMounted } = Vue;
 
+        // ✅ vuedraggable CDN 防呆（不影響功能，只避免元件沒註冊）
+        const draggableComp = (window.vuedraggable && (window.vuedraggable.default || window.vuedraggable)) || window.VueDraggableNext;
+
         createApp({
-            components: { 'draggable': window.vuedraggable },
+            components: { 'draggable': draggableComp },
             setup() {
                 const shisaLogo = ref("https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg");
                 const viewMode = ref('plan'), currentDayIdx = ref(0), showSetupModal = ref(false), currentTripId = ref(null), isInitialLoad = ref(true);
                 const days = ref([]), setup = ref({ destination: '沖繩 Okinawa', startDate: '2026-04-25', days: 7, rate: 0.215 }), expenses = ref([]), participantsStr = ref('我, 旅伴A'), packingList = ref([]), coupons = ref([]), memoText = ref(''), newItemName = ref(''), newExpense = ref({ item: '', amount: '', payer: '我', date: new Date().toISOString().split('T')[0], currency: 'JPY' });
 
+                // ✅ 保證 days 一定有資料結構（核心修復：否則 addItem 永遠 no-op）
+                const buildDefaultDays = () => {
+                    const n = setup.value.days || 7;
+                    const start = new Date(setup.value.startDate || new Date().toISOString().split('T')[0]);
+                    const pad = (x) => String(x).padStart(2, '0');
+
+                    return Array.from({ length: n }, (_, i) => {
+                        const d = new Date(start);
+                        d.setDate(start.getDate() + i);
+                        const y = d.getFullYear();
+                        const m = pad(d.getMonth() + 1);
+                        const dd = pad(d.getDate());
+                        return {
+                            shortDate: `${m}/${dd}`,
+                            date: `${y}-${m}-${dd}`,
+                            title: '',
+                            flight: null,
+                            items: []
+                        };
+                    });
+                };
+
                 const currentDay = computed(() => days.value[currentDayIdx.value] || { items: [], flight: null });
                 const participants = computed(() => participantsStr.value.split(',').map(s=>s.trim()).filter(s=>s));
                 
-                // 支出計算恢復
                 const totalExpense = computed(() => expenses.value.reduce((sum, item) => item.currency === 'TWD' ? sum + (Number(item.amount) / setup.value.rate) : sum + Number(item.amount), 0));
                 const paidByPerson = computed(() => { 
                     const map = {}; participants.value.forEach(p => map[p] = 0); 
@@ -285,25 +295,35 @@ const currentDay = computed({
                 
                 const packingProgress = computed(() => packingList.value.length ? (packingList.value.filter(i=>i.checked).length/packingList.value.length)*100 : 0);
 
-                // 修復：100% 確保新增行程成功（只改這段，其他功能不動）
+                // ✅ 修復：新增行程（days 空/該天不存在時先補 day）
                 const addItem = () => {
                     const idx = currentDayIdx.value;
 
-                    // 若該天不存在，先補一個最基本 day，避免按鈕無效
                     if (!days.value[idx]) {
-                        days.value[idx] = { shortDate: '', date: '', title: '', flight: null, items: [] };
+                        // 如果目前 days 是空的，先整體初始化（保留 7 天/或 setup.days）
+                        if (!days.value.length) days.value = buildDefaultDays();
+                        // 若仍沒有該 idx（極端狀況），補一格
+                        if (!days.value[idx]) days.value[idx] = { shortDate: '', date: '', title: '', flight: null, items: [] };
                     }
+
                     if (!days.value[idx].items) days.value[idx].items = [];
 
-                    // 直接 push 進陣列
                     days.value[idx].items.push({ 
-                        id: 'item_' + Date.now() + Math.random().toString(36).slice(2, 7),
+                        id: 'item_' + Date.now() + Math.random().toString(36).substr(2, 5),
                         time: '12:00', type: 'spot', activity: '', location: '', note: '' 
                     });
                 };
 
                 const removeItem = (idx) => days.value[currentDayIdx.value].items.splice(idx, 1);
-                const addFlight = () => days.value[currentDayIdx.value].flight = { startTime: '10:00', number: 'BR198', endTime: '12:30' };
+                const addFlight = () => {
+                    // 若 day 不存在也先補（避免點航班也無效）
+                    const idx = currentDayIdx.value;
+                    if (!days.value[idx]) {
+                        if (!days.value.length) days.value = buildDefaultDays();
+                        if (!days.value[idx]) days.value[idx] = { shortDate: '', date: '', title: '', flight: null, items: [] };
+                    }
+                    days.value[idx].flight = { startTime: '10:00', number: 'BR198', endTime: '12:30' };
+                };
 
                 const addPackItem = () => { if(newItemName.value.trim()){ packingList.value.unshift({name: newItemName.value, checked: false}); newItemName.value = ''; } };
                 const removePackItem = (idx) => packingList.value.splice(idx, 1);
@@ -329,11 +349,20 @@ const currentDay = computed({
                     currentTripId.value = id;
                     onValue(dbRef(db, 'trips/' + id), (snapshot) => {
                         const data = snapshot.val();
+
                         if (data) {
                             let rawDays = data.days || [];
+
+                            // ✅ 核心：就算 data 存在，但 days 是空，也要初始化，否則 addItem 永遠無效
+                            if (rawDays.length === 0) rawDays = buildDefaultDays();
+
                             // 固定 7 天邏輯
                             if (rawDays.length > 7) rawDays = rawDays.slice(0, 7);
-                            rawDays.forEach(d => { if(d.items) d.items.forEach(i => { if(!i.id) i.id = 'r_' + Math.random().toString(36).substr(2, 5); }); });
+
+                            rawDays.forEach(d => {
+                                if (!d.items) d.items = [];
+                                d.items.forEach(i => { if(!i.id) i.id = 'r_' + Math.random().toString(36).substr(2, 5); });
+                            });
                             
                             days.value = rawDays;
                             expenses.value = data.expenses || [];
@@ -343,7 +372,16 @@ const currentDay = computed({
                             memoText.value = data.memoText || '';
                             participantsStr.value = data.participantsStr || '我, 旅伴A';
                             
-                            // 延遲解除鎖定，防止存檔
+                            setTimeout(() => { isInitialLoad.value = false; }, 800);
+                        } else {
+                            // ✅ 核心：trip 節點根本不存在時也要初始化 days
+                            days.value = buildDefaultDays();
+                            expenses.value = [];
+                            packingList.value = [];
+                            coupons.value = [];
+                            memoText.value = '';
+                            participantsStr.value = '我, 旅伴A';
+
                             setTimeout(() => { isInitialLoad.value = false; }, 800);
                         }
                     }, { onlyOnce: true });
@@ -354,7 +392,12 @@ const currentDay = computed({
                         const index = snapshot.val();
                         if (index && index.length > 0) {
                             if (!currentTripId.value) switchTrip(index[0].id);
-                        } else { showSetupModal.value = true; }
+                        } else {
+                            showSetupModal.value = true;
+                            // ✅ 沒有 index 時也先初始化（避免進來就是空）
+                            if (!days.value.length) days.value = buildDefaultDays();
+                            setTimeout(() => { isInitialLoad.value = false; }, 800);
+                        }
                     });
                 });
 
