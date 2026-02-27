@@ -115,41 +115,21 @@
                 </div>
 
                 <!-- ✅ 右側工具區：新增拖曳把手 -->
-               <div class="flex flex-col gap-3 shrink-0 items-center">
-  <!-- 小飛機：有地址才顯示 -->
-  <button
-    v-if="item.location && item.location.trim()"
-    @click="openGoogleMap(item.location)"
-    class="w-10 h-10 rounded-2xl bg-teal-50 text-teal-500 hover:bg-teal-100 hover:text-teal-600 flex items-center justify-center shadow-sm"
-    title="在 Google Maps 開啟"
-  >
-    <i class="ph-bold ph-paper-plane-tilt text-xl"></i>
-  </button>
+                <div class="flex flex-col gap-3 shrink-0 items-center justify-between">
+                    <button class="drag-handle text-slate-200 hover:text-slate-400 transition-colors cursor-grab active:cursor-grabbing">
+                        <i class="ph-bold ph-dots-six-vertical text-xl"></i>
+                    </button>
+                    <button @click="removeItem(idx)" class="text-red-200 hover:text-red-500 transition-colors">
+                        <i class="ph-bold ph-trash text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <!-- 拖曳把手 -->
-  <button
-    class="drag-handle w-10 h-10 rounded-2xl bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 flex items-center justify-center cursor-grab active:cursor-grabbing"
-    title="拖曳排序"
-  >
-    <i class="ph-bold ph-dots-six-vertical text-xl"></i>
-  </button>
-
-  <!-- 刪除 -->
-  <button
-    @click="removeItem(idx)"
-    class="w-10 h-10 rounded-2xl bg-rose-50 text-rose-300 hover:bg-rose-100 hover:text-rose-500 flex items-center justify-center"
-    title="刪除"
-  >
-    <i class="ph-bold ph-trash text-xl"></i>
-  </button>
-</div>
-
-</div> <!-- ✅ 這個是 .flex gap-4 items-start 的結尾 -->
-</div> <!-- ✅ 這個是 .handwritten-card 的結尾 -->
-
-<button @click="addItem" class="text-orange-500 font-bold text-sm flex items-center gap-1">
-  <i class="ph-bold ph-plus-circle"></i> 加入行程項目
-</button>
+    <button @click="addItem" class="text-orange-500 font-bold text-sm flex items-center gap-1">
+        <i class="ph-bold ph-plus-circle"></i> 加入行程項目
+    </button>
 </div>
 
             </div>
@@ -242,12 +222,7 @@
                 const shisaLogo = ref("https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg");
                 const viewMode = ref('plan'), currentDayIdx = ref(0), showSetupModal = ref(false), tripList = ref([]), currentTripId = ref(null);
                 const days = ref([]), setup = ref({ destination: '沖繩 Okinawa', startDate: '2026-04-25', days: 7, rate: 0.215 }), expenses = ref([]), participantsStr = ref('我, 旅伴A'), newItemName = ref(''), packingList = ref([]), coupons = ref([]), newExpense = ref({ item: '', amount: '', payer: '', date: new Date().toISOString().split('T')[0], currency: 'JPY' });
-                const openGoogleMap = (q) => {
-  const query = (q || '').trim();
-  if (!query) return;
-  window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank');
-};
-
+                
                 const memoText = ref('');
 
                 const itineraryListEl = ref(null);
@@ -376,7 +351,7 @@ watch(currentDayIdx, () => nextTick(() => initItinerarySortable()));
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon,
-                    memoText, syncTripName, itineraryListEl, openGoogleMap
+                    memoText, syncTripName, itineraryListEl
                 };
             }
         }).mount('#app')
