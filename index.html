@@ -110,7 +110,13 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <input v-model="item.activity" class="font-black text-slate-700 bg-transparent border-none p-0 w-full text-lg focus:ring-0" placeholder="目的名稱">
-                    <input v-model="item.location" class="text-[10px] text-slate-400 bg-transparent border-none p-0 w-full mt-1 focus:ring-0" placeholder="地址或店名">
+                    <div class="flex items-center gap-2 w-full mt-1">
+  <input v-model="item.location" class="text-[10px] text-slate-400 bg-transparent border-none p-0 flex-1 focus:ring-0" placeholder="地址或店名">
+  <button v-if="item.location && item.location.trim()" @click="openGoogleMap(item.location)" class="shrink-0 text-orange-400 hover:text-orange-600">
+    <i class="ph-bold ph-map-pin"></i>
+  </button>
+</div>
+
                     <input v-model="item.note" class="text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 focus:ring-0 border-none" placeholder="備註: MapCode/網址/提醒">
                 </div>
 
@@ -233,7 +239,12 @@
                 const shisaLogo = ref("https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg");
                 const viewMode = ref('plan'), currentDayIdx = ref(0), showSetupModal = ref(false), tripList = ref([]), currentTripId = ref(null);
                 const days = ref([]), setup = ref({ destination: '沖繩 Okinawa', startDate: '2026-04-25', days: 7, rate: 0.215 }), expenses = ref([]), participantsStr = ref('我, 旅伴A'), newItemName = ref(''), packingList = ref([]), coupons = ref([]), newExpense = ref({ item: '', amount: '', payer: '', date: new Date().toISOString().split('T')[0], currency: 'JPY' });
-                
+                const openGoogleMap = (q) => {
+  const query = (q || '').trim();
+  if (!query) return;
+  window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank');
+};
+
                 const memoText = ref('');
 
                 const itineraryListEl = ref(null);
@@ -362,7 +373,7 @@ watch(currentDayIdx, () => nextTick(() => initItinerarySortable()));
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon,
-                    memoText, syncTripName, itineraryListEl
+                    memoText, syncTripName, itineraryListEl, openGoogleMap
                 };
             }
         }).mount('#app')
