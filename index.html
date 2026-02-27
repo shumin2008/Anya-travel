@@ -1,27 +1,27 @@
 <script type="module">
-/* ====== Debug overlay: 一旦出錯不會只剩空白 ====== */
+/* ====== Debug overlay: 出錯會顯示，不會整頁空白 ====== */
 window.addEventListener("error", (e) => {
   document.body.innerHTML =
     "<pre style='white-space:pre-wrap;padding:12px;background:#111;color:#f66;font-size:12px;line-height:1.4'>" +
-    "JS error:\\n" + (e?.message || e) +
-    "\\n\\nSource:\\n" + (e?.filename || "") + ":" + (e?.lineno || "") +
+    "JS error:\n" + (e?.message || e) +
+    "\n\nSource:\n" + (e?.filename || "") + ":" + (e?.lineno || "") +
     "</pre>";
 });
 window.addEventListener("unhandledrejection", (e) => {
   document.body.innerHTML =
     "<pre style='white-space:pre-wrap;padding:12px;background:#111;color:#f66;font-size:12px;line-height:1.4'>" +
-    "Promise error:\\n" + (e?.reason?.message || e?.reason || e) +
+    "Promise error:\n" + (e?.reason?.message || e?.reason || e) +
     "</pre>";
 });
 
-/* ====== Firebase imports ====== */
+/* ✅ 直接用 ESM import，不依賴 window.Vue */
+import { createApp, ref, computed, watch, onMounted, nextTick, onBeforeUnmount } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+
+/* Firebase */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 import { getDatabase, ref as dbRef, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-const { createApp, ref, computed, watch, onMounted, nextTick, onBeforeUnmount } = Vue;
-
-/* ====== Firebase config ====== */
 const firebaseConfig = {
   apiKey: "AIzaSyBjeYJPSMXhoprXnSVIWLW8Tx65-CjhEFs",
   authDomain: "anya-travel.firebaseapp.com",
@@ -35,7 +35,7 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 
-// ✅ Analytics 可能在某些環境 throw；try/catch 避免整頁空白
+/* ✅ analytics 可能 throw，避免整段中止 */
 let analytics = null;
 try {
   analytics = getAnalytics(fbApp);
@@ -78,7 +78,6 @@ createApp({
       participantsStr.value.split(",").map((s) => s.trim()).filter((s) => s)
     );
 
-    // ✅ rate 防呆：避免 0/空值造成 NaN / Infinity
     const safeRate = computed(() => {
       const r = Number(setup.value.rate);
       return Number.isFinite(r) && r > 0 ? r : 0.215;
@@ -153,7 +152,7 @@ createApp({
     };
     const removeExpense = (idx) => expenses.value.splice(idx, 1);
 
-    /* ====== Firebase save (debounce) ====== */
+    /* Firebase save (debounce) */
     const saveTripList = () => set(dbRef(db, "shisa_trip_index"), tripList.value);
 
     const saveCurrentTripData = () => {
@@ -175,7 +174,6 @@ createApp({
       saveTimer = setTimeout(saveCurrentTripData, 400);
     };
 
-    /* ====== Upload (保持你原本做法，只把 save 改 debounce) ====== */
     const handleAvatarUpload = (e) => {
       const reader = new FileReader();
       reader.onload = (ev) => {
@@ -240,11 +238,11 @@ createApp({
       scheduleSave();
     };
 
-    /* ====== switchTrip unsubscribe fix ====== */
+    /* switchTrip unsubscribe fix */
     let tripUnsub = null;
 
     const switchTrip = (id) => {
-      if (tripUnsub) tripUnsub(); // ✅ 解除舊監聽
+      if (tripUnsub) tripUnsub();
 
       currentTripId.value = id;
       showTripMenu.value = false;
@@ -279,7 +277,6 @@ createApp({
       }
     };
 
-    /* ====== Init trip index ====== */
     onMounted(() => {
       onValue(dbRef(db, "shisa_trip_index"), (snapshot) => {
         const index = snapshot.val();
@@ -299,10 +296,9 @@ createApp({
       clearTimeout(saveTimer);
     });
 
-    // ✅ 深度監聽仍保留，但用 debounce，避免狂寫
     watch([days, expenses, packingList, setup, coupons, participantsStr], scheduleSave, { deep: true });
 
-    /* ====== Map (保持原樣) ====== */
+    /* Map */
     let map = null;
     const initMap = async () => {
       await nextTick();
