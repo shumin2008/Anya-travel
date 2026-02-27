@@ -1,10 +1,27 @@
 <script type="module">
+/* ====== Debug overlay: 一旦出錯不會只剩空白 ====== */
+window.addEventListener("error", (e) => {
+  document.body.innerHTML =
+    "<pre style='white-space:pre-wrap;padding:12px;background:#111;color:#f66;font-size:12px;line-height:1.4'>" +
+    "JS error:\\n" + (e?.message || e) +
+    "\\n\\nSource:\\n" + (e?.filename || "") + ":" + (e?.lineno || "") +
+    "</pre>";
+});
+window.addEventListener("unhandledrejection", (e) => {
+  document.body.innerHTML =
+    "<pre style='white-space:pre-wrap;padding:12px;background:#111;color:#f66;font-size:12px;line-height:1.4'>" +
+    "Promise error:\\n" + (e?.reason?.message || e?.reason || e) +
+    "</pre>";
+});
+
+/* ====== Firebase imports ====== */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 import { getDatabase, ref as dbRef, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const { createApp, ref, computed, watch, onMounted, nextTick, onBeforeUnmount } = Vue;
 
+/* ====== Firebase config ====== */
 const firebaseConfig = {
   apiKey: "AIzaSyBjeYJPSMXhoprXnSVIWLW8Tx65-CjhEFs",
   authDomain: "anya-travel.firebaseapp.com",
@@ -16,10 +33,9 @@ const firebaseConfig = {
   measurementId: "G-WC117BJ5Z2"
 };
 
-// Initialize Firebase
 const fbApp = initializeApp(firebaseConfig);
 
-// ✅ 避免 analytics 在某些環境直接 throw 造成整頁空白
+// ✅ Analytics 可能在某些環境 throw；try/catch 避免整頁空白
 let analytics = null;
 try {
   analytics = getAnalytics(fbApp);
@@ -35,63 +51,6 @@ createApp({
 
     const shisaLogo = ref(DEFAULT_LOGO);
 
-    // --- 圖片壓縮 ---
-    // 頭像：中央裁切成正方形 + 壓縮
-    const compressImageSquare = (file, maxSize = 200, quality = 0.7) => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement("canvas");
-            const w = img.width, h = img.height;
-
-            const size = Math.min(w, h);
-            const sx = (w - size) / 2;
-            const sy = (h - size) / 2;
-
-            const d = size > maxSize ? maxSize : size;
-            canvas.width = d;
-            canvas.height = d;
-
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, sx, sy, size, size, 0, 0, d, d);
-
-            resolve(canvas.toDataURL("image/jpeg", quality));
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    };
-
-    // 優惠券：保留原比例縮放（不裁切）+ 壓縮
-    const compressImageKeepRatio = (file, maxWidth = 1200, quality = 0.75) => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = new Image();
-          img.onload = () => {
-            const scale = Math.min(1, maxWidth / img.width);
-            const w = Math.round(img.width * scale);
-            const h = Math.round(img.height * scale);
-
-            const canvas = document.createElement("canvas");
-            canvas.width = w;
-            canvas.height = h;
-
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, w, h);
-
-            resolve(canvas.toDataURL("image/jpeg", quality));
-          };
-          img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    };
-
-    // --- 原有 state ---
     const viewMode = ref("plan");
     const currentDayIdx = ref(0);
     const showSetupModal = ref(false);
@@ -115,9 +74,11 @@ createApp({
     });
 
     const currentDay = computed(() => days.value[currentDayIdx.value] || { items: [], flight: null });
-    const participants = computed(() => participantsStr.value.split(",").map((s) => s.trim()).filter((s) => s));
+    const participants = computed(() =>
+      participantsStr.value.split(",").map((s) => s.trim()).filter((s) => s)
+    );
 
-    // ✅ rate 防呆（避免 0/空值造成 NaN / Infinity）
+    // ✅ rate 防呆：避免 0/空值造成 NaN / Infinity
     const safeRate = computed(() => {
       const r = Number(setup.value.rate);
       return Number.isFinite(r) && r > 0 ? r : 0.215;
@@ -131,7 +92,9 @@ createApp({
     );
 
     const packingProgress = computed(() =>
-      packingList.value.length ? (packingList.value.filter((i) => i.checked).length / packingList.value.length) * 100 : 0
+      packingList.value.length
+        ? (packingList.value.filter((i) => i.checked).length / packingList.value.length) * 100
+        : 0
     );
 
     const paidByPerson = computed(() => {
@@ -145,11 +108,11 @@ createApp({
       return map;
     });
 
-    // --- 行程 ---
     const getGoogleMapLink = (activity, loc) => {
       const query = [activity, loc].filter(Boolean).join(" ");
       return query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : "#";
     };
+
     const addItem = () => currentDay.value.items.push({ time: "10:00", type: "spot", activity: "", location: "", note: "" });
     const removeItem = (idx) => currentDay.value.items.splice(idx, 1);
 
@@ -158,10 +121,9 @@ createApp({
       if (!last?.fullDate) return;
       const lastDay = new Date(last.fullDate);
       lastDay.setDate(lastDay.getDate() + 1);
-      const mm = lastDay.getMonth() + 1,
-        dd = lastDay.getDate();
+      const mm = lastDay.getMonth() + 1, dd = lastDay.getDate();
       days.value.push({
-        date: `${mm}/${dd} (${["日", "一", "二", "三", "四", "五", "六"][lastDay.getDay()]})`,
+        date: `${mm}/${dd} (${["日","一","二","三","四","五","六"][lastDay.getDay()]})`,
         shortDate: `${mm}/${dd}`,
         fullDate: lastDay.toISOString().split("T")[0],
         items: [],
@@ -174,7 +136,6 @@ createApp({
       else currentDay.value.flight = { startTime: "11:16", startAirport: "TPE", number: "BR198", endTime: "14:00", endAirport: "OKA" };
     };
 
-    // --- 行李 ---
     const addPackItem = () => {
       if (newItemName.value.trim()) {
         packingList.value.unshift({ name: newItemName.value, checked: false });
@@ -183,7 +144,6 @@ createApp({
     };
     const removePackItem = (idx) => packingList.value.splice(idx, 1);
 
-    // --- 支出 ---
     const addExpense = () => {
       if (newExpense.value.item && newExpense.value.amount && newExpense.value.payer) {
         expenses.value.unshift({ ...newExpense.value });
@@ -193,28 +153,7 @@ createApp({
     };
     const removeExpense = (idx) => expenses.value.splice(idx, 1);
 
-    // --- 上傳：頭像 / 優惠券（改成壓縮） ---
-    const handleAvatarUpload = async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      shisaLogo.value = await compressImageSquare(file, 200, 0.6);
-      scheduleSave(); // ✅ 改成 debounce 寫入
-    };
-
-    const handleCouponUpload = async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      // ✅ 不裁切、保留比例，避免優惠券文字被切掉
-      const compressed = await compressImageKeepRatio(file, 1200, 0.75);
-      coupons.value.unshift({ image: compressed, note: "" });
-      // 由 watch + debounce 自動存
-    };
-
-    const removeCoupon = (idx) => {
-      if (confirm("確定刪除？")) coupons.value.splice(idx, 1);
-    };
-
-    // --- Firebase 寫入：改 debounce 避免狂寫 ---
+    /* ====== Firebase save (debounce) ====== */
     const saveTripList = () => set(dbRef(db, "shisa_trip_index"), tripList.value);
 
     const saveCurrentTripData = () => {
@@ -236,7 +175,26 @@ createApp({
       saveTimer = setTimeout(saveCurrentTripData, 400);
     };
 
-    // 標題與清單同步
+    /* ====== Upload (保持你原本做法，只把 save 改 debounce) ====== */
+    const handleAvatarUpload = (e) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        shisaLogo.value = ev.target.result;
+        scheduleSave();
+      };
+      if (e.target.files && e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
+    };
+
+    const handleCouponUpload = (e) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => coupons.value.unshift({ image: ev.target.result, note: "" });
+      if (e.target.files && e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
+    };
+
+    const removeCoupon = (idx) => {
+      if (confirm("確定刪除？")) coupons.value.splice(idx, 1);
+    };
+
     const syncTripName = () => {
       const trip = tripList.value.find((t) => t.id === currentTripId.value);
       if (trip) trip.destination = setup.value.destination;
@@ -244,7 +202,6 @@ createApp({
       scheduleSave();
     };
 
-    // --- 旅程管理 ---
     const generateId = () => "shisa_" + Date.now().toString(36);
 
     const createNewTrip = () => {
@@ -262,8 +219,8 @@ createApp({
         const d = new Date(start);
         d.setDate(start.getDate() + i);
         return {
-          date: `${d.getMonth() + 1}/${d.getDate()} (${["日", "一", "二", "三", "四", "五", "六"][d.getDay()]})`,
-          shortDate: `${d.getMonth() + 1}/${d.getDate()}`,
+          date: `${d.getMonth()+1}/${d.getDate()} (${["日","一","二","三","四","五","六"][d.getDay()]})`,
+          shortDate: `${d.getMonth()+1}/${d.getDate()}`,
           fullDate: d.toISOString().split("T")[0],
           items: [],
           flight: null
@@ -283,11 +240,11 @@ createApp({
       scheduleSave();
     };
 
-    // ✅ 修：避免 switchTrip 每切一次就多掛一個 onValue 監聽器
+    /* ====== switchTrip unsubscribe fix ====== */
     let tripUnsub = null;
 
     const switchTrip = (id) => {
-      if (tripUnsub) tripUnsub(); // 解除舊監聽
+      if (tripUnsub) tripUnsub(); // ✅ 解除舊監聽
 
       currentTripId.value = id;
       showTripMenu.value = false;
@@ -308,6 +265,7 @@ createApp({
 
     const deleteTrip = (id) => {
       if (!confirm("確定刪除？")) return;
+
       tripList.value = tripList.value.filter((t) => t.id !== id);
       set(dbRef(db, "trips/" + id), null);
       saveTripList();
@@ -321,7 +279,7 @@ createApp({
       }
     };
 
-    // --- 初始化：讀取旅程清單 ---
+    /* ====== Init trip index ====== */
     onMounted(() => {
       onValue(dbRef(db, "shisa_trip_index"), (snapshot) => {
         const index = snapshot.val();
@@ -341,10 +299,10 @@ createApp({
       clearTimeout(saveTimer);
     });
 
-    // ✅ 深度監聽仍保留，但改成 debounce 存檔
+    // ✅ 深度監聽仍保留，但用 debounce，避免狂寫
     watch([days, expenses, packingList, setup, coupons, participantsStr], scheduleSave, { deep: true });
 
-    // --- Map ---
+    /* ====== Map (保持原樣) ====== */
     let map = null;
     const initMap = async () => {
       await nextTick();
