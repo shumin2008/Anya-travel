@@ -232,9 +232,23 @@
         </main>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref as dbRef, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+const currentDay = computed({
+    get() {
+        const idx = currentDayIdx.value;
+
+        // 確保該天一定存在（避免 computed readonly + v-model 寫入報錯）
+        if (!days.value[idx]) {
+            days.value[idx] = { shortDate: '', date: '', title: '', flight: null, items: [] };
+        }
+        if (!days.value[idx].items) days.value[idx].items = [];
+
+        return days.value[idx];
+    },
+    set(val) {
+        days.value[currentDayIdx.value] = val;
+    }
+});
+
 
         const firebaseConfig = {
             apiKey: "AIzaSyBjeYJPSMXhoprXnSVIWLW8Tx65-CjhEFs",
