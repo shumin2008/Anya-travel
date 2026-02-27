@@ -28,6 +28,13 @@
         select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23E65100'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 4px center; background-size: 10px; }
         .title-input { background: transparent; border: none; font-weight: 900; font-size: 1.25rem; width: 100%; color: var(--shisa-brown); padding: 0; margin: 0; }
         .title-input:focus { outline: none; border-bottom: 2px dashed rgba(93, 64, 55, 0.3); }
+        .auto-grow {
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
         
         /* 備忘錄專用樣式 */
         .memo-textarea { width: 100%; min-height: 450px; border: none; resize: none; background: transparent; line-height: 2; font-size: 15px; color: #4A5568; font-family: inherit; }
@@ -113,9 +120,30 @@
                     </select>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <input v-model="item.activity" class="font-black text-slate-700 bg-transparent border-none p-0 w-full text-lg focus:ring-0" placeholder="目的名稱">
-                    <input v-model="item.location" class="text-[10px] text-slate-400 bg-transparent border-none p-0 w-full mt-1 focus:ring-0" placeholder="地址或店名">
-                    <input v-model="item.note" class="text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 focus:ring-0 border-none" placeholder="備註: MapCode/網址/提醒">
+                    <textarea
+  v-model="item.activity"
+  rows="1"
+  class="auto-grow font-black text-slate-700 bg-transparent border-none p-0 w-full text-lg focus:ring-0 leading-snug"
+  placeholder="目的名稱"
+  @input="$event.target.style.height='auto'; $event.target.style.height=$event.target.scrollHeight+'px';"
+></textarea>
+
+                    <textarea
+  v-model="item.location"
+  rows="1"
+  class="auto-grow text-[10px] text-slate-400 bg-transparent border-none p-0 w-full mt-1 focus:ring-0 leading-snug"
+  placeholder="地址或店名"
+  @input="$event.target.style.height='auto'; $event.target.style.height=$event.target.scrollHeight+'px';"
+></textarea>
+
+                    <textarea
+  v-model="item.note"
+  rows="1"
+  class="auto-grow text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 focus:ring-0 border-none leading-snug"
+  placeholder="備註: MapCode/網址/提醒"
+  @input="$event.target.style.height='auto'; $event.target.style.height=$event.target.scrollHeight+'px';"
+></textarea>
+
                 </div>
 
                 <!-- ✅ 右側工具區：新增拖曳把手 -->
