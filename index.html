@@ -35,12 +35,9 @@
                 <div class="flex items-center gap-3 flex-1 overflow-hidden">
                     <button @click="showTripMenu = true"><i class="ph-bold ph-list text-2xl"></i></button>
                     <div class="flex items-center gap-2 overflow-hidden flex-1">
-                        <div class="w-12 h-12 rounded-full bg-white border-2 border-orange-400 p-0.5 shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center relative">
-    <input type="file" id="avatar-upload" class="hidden" accept="image/*" @change="handleAvatarUpload">
-    <label for="avatar-upload" class="cursor-pointer w-full h-full flex items-center justify-center">
-        <img :src="shisaLogo" alt="頭像" class="w-full h-full object-contain">
-    </label>
-</div>
+                        <div class="w-12 h-12 rounded-full bg-white border-2 border-orange-400 p-0.5 shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center">
+                            <img :src="shisaLogo" alt="獅薩" class="w-full h-full object-contain">
+                        </div>
                         <div class="overflow-hidden flex-1">
                             <input v-model="setup.destination" class="title-input" placeholder="點擊輸入旅程名稱" @change="syncTripName">
                             <p class="text-[10px] font-bold opacity-60 uppercase truncate">Happy Trip with Shisa!</p>
@@ -57,7 +54,7 @@
                 </div>
             </div>
             
-            <div v-show="viewMode === 'plan' || viewMode === 'map'" class="flex overflow-x-auto hide-scroll px-3 pb-3 space-x-3 snap-x">
+            <div v-if="viewMode === 'plan' || viewMode === 'map'" class="flex overflow-x-auto hide-scroll px-3 pb-3 space-x-3 snap-x">
                 <div v-for="(day, index) in days" :key="index" @click="currentDayIdx = index" 
                      class="snap-center shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-2xl cursor-pointer border-2 transition-all" 
                      :class="currentDayIdx === index ? 'bg-white text-[#E65100] border-white shadow-lg scale-105' : 'bg-white/30 text-orange-900/40 border-transparent'">
@@ -70,7 +67,7 @@
 
         <main class="flex-1 overflow-y-auto relative hide-scroll bg-[#fdfaf5]">
             
-            <div v-show="viewMode === 'plan'" class="p-4 pb-24">
+            <div v-if="viewMode === 'plan'" class="p-4 pb-24">
                 <div class="handwritten-card p-4 mb-4 border-l-8 border-orange-400">
                     <h2 class="text-2xl font-black text-slate-800">{{ currentDay.date }}</h2>
                     <input v-model="currentDay.title" class="text-sm text-slate-400 bg-transparent border-none w-full p-0 focus:ring-0 font-bold" placeholder="今天的計畫是...">
@@ -116,7 +113,7 @@
                 </div>
             </div>
             
-            <div v-show="viewMode === 'pack'" class="p-4 pb-24 text-sm">
+            <div v-if="viewMode === 'pack'" class="p-4 pb-24 text-sm">
                 <div class="bg-indigo-600 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden uppercase tracking-widest">
                     <i class="ph-fill ph-suitcase-rolling absolute -right-4 -bottom-4 text-9xl opacity-10"></i>
                     <h2 class="text-2xl font-black relative z-10">行李清單</h2>
@@ -138,13 +135,13 @@
                 </div>
             </div>
 
-            <div v-show="viewMode === 'coupons'" class="p-4 pb-24 text-sm text-center">
+            <div v-if="viewMode === 'coupons'" class="p-4 pb-24 text-sm text-center">
                 <div class="bg-amber-500 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden"><i class="ph-fill ph-ticket absolute -right-4 -bottom-4 text-9xl opacity-10"></i><h2 class="text-2xl font-black relative z-10">優惠券截圖</h2></div>
                 <div class="handwritten-card p-6 mb-6 border-2 border-dashed border-amber-200"><input type="file" id="coupon-upload" class="hidden" accept="image/*" @change="handleCouponUpload"><label for="coupon-upload" class="cursor-pointer flex flex-col items-center gap-2"><i class="ph-bold ph-cloud-arrow-up text-4xl text-amber-500"></i><span class="font-black text-amber-700 text-sm">新增優惠券截圖</span></label></div>
                 <div class="grid grid-cols-1 gap-4"><div v-for="(coupon, idx) in coupons" :key="idx" class="handwritten-card overflow-hidden"><img :src="coupon.image" class="w-full h-auto object-cover"><div class="p-3 flex justify-between bg-amber-50/30"><input v-model="coupon.note" class="flex-1 bg-transparent border-none p-0 text-sm font-bold text-amber-900 focus:ring-0 text-left" placeholder="備註..."><button @click="removeCoupon(idx)" class="text-red-200 hover:text-red-500"><i class="ph-bold ph-trash-simple text-lg"></i></button></div></div></div>
             </div>
 
-            <div v-show="viewMode === 'money'" class="p-4 pb-24 text-sm">
+            <div v-if="viewMode === 'money'" class="p-4 pb-24 text-sm">
                 <div class="bg-orange-500 text-white p-6 rounded-3xl shadow-xl mb-6 text-center relative overflow-hidden">
                     <div class="absolute top-2 right-4 flex flex-col items-end"><label class="text-[9px] font-bold opacity-60 uppercase">Rate</label><input v-model.number="setup.rate" type="number" step="0.001" class="w-16 bg-white/20 text-white text-xs rounded px-1 text-right border-none focus:ring-0 font-mono"></div>
                     <div class="text-sm font-bold opacity-80 uppercase tracking-widest">Total (JPY)</div>
@@ -213,50 +210,7 @@ const db = getDatabase(app);
         createApp({
             setup() {
                 const shisaLogo = ref("https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg");
-const handleAvatarUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        // 等待壓縮完成
-        const compressedBase64 = await compressImage(file, 200, 0.6); // 頭像縮到 200px 就夠了
-        shisaLogo.value = compressedBase64;
-        saveCurrentTripData();
-    }
-};
                 
-// 【最終進化版】智慧裁切+壓縮器：自動取中央正方形、縮小、降低品質
-const compressImage = (file, maxWidth = 400, quality = 0.7) => {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (e) => {
-            const img = new Image();
-            img.src = e.target.result;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-
-                // --- 智慧裁切：找出短邊，計算中央正方形的起點 ---
-                let size = Math.min(width, height); 
-                let sx = (width - size) / 2;       // 從 X 軸中心開始切
-                let sy = (height - size) / 2;      // 從 Y 軸中心開始切
-
-                let dSize = size > maxWidth ? maxWidth : size; 
-
-                canvas.width = dSize;
-                canvas.height = dSize;
-                const ctx = canvas.getContext('2d');
-                
-                // 這裡最關鍵：從原圖的 (sx, sy) 抓取 size 大小的正方形，畫進畫布
-                ctx.drawImage(img, sx, sy, size, size, 0, 0, dSize, dSize);
-
-                resolve(canvas.toDataURL('image/jpeg', quality));
-            };
-        };
-    });
-};
-
-
                 const viewMode = ref('plan'), currentDayIdx = ref(0), showSetupModal = ref(false), showTripMenu = ref(false), tripList = ref([]), currentTripId = ref(null);
                 const days = ref([]), setup = ref({ destination: '沖繩 Okinawa', startDate: '2026-04-25', days: 7, rate: 0.215 }), expenses = ref([]), participantsStr = ref('我, 旅伴A'), newItemName = ref(''), packingList = ref([]), coupons = ref([]), newExpense = ref({ item: '', amount: '', payer: '', date: new Date().toISOString().split('T')[0], currency: 'JPY' });
 
@@ -275,23 +229,8 @@ const compressImage = (file, maxWidth = 400, quality = 0.7) => {
                 const removePackItem = (idx) => packingList.value.splice(idx, 1);
                 const addExpense = () => { if(newExpense.value.item && newExpense.value.amount && newExpense.value.payer){ expenses.value.unshift({...newExpense.value}); newExpense.value.item = ''; newExpense.value.amount = ''; } };
                 const removeExpense = (idx) => expenses.value.splice(idx, 1);
-                // 優惠券上傳：加入壓縮處理
-const handleCouponUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        // 1. 調用壓縮器（寬度設為 800px 確保文字清晰，品質 0.7）
-        const compressedBase64 = await compressImage(file, 800, 0.7); 
-        
-        // 2. 將壓縮後的圖片塞進清單最前面
-        coupons.value.unshift({ 
-            image: compressedBase64, 
-            note: '' 
-        });
-        
-        // 💡 提示：因為你有設定 watch 監聽 coupons，
-        // 這裡不需要手動呼叫 saveCurrentTripData()，它會自動同步！
-    }
-};
+                const handleCouponUpload = (e) => { const reader = new FileReader(); reader.onload = (ev) => coupons.value.unshift({ image: ev.target.result, note: '' }); if (e.target.files[0]) reader.readAsDataURL(e.target.files[0]); };
+                const removeCoupon = (idx) => { if(confirm('確定刪除？')) coupons.value.splice(idx, 1); };
 
                 // 標題與清單同步
                 const syncTripName = () => {
@@ -317,7 +256,6 @@ const handleCouponUpload = async (e) => {
     onValue(dbRef(db, 'trips/' + id), (snapshot) => {
         const data = snapshot.val();
         if (data) {
-            shisaLogo.value = data.shisaLogo || "https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg";
             days.value = data.days || [];
             expenses.value = data.expenses || [];
             setup.value = data.setup || {};
@@ -343,7 +281,6 @@ const handleCouponUpload = async (e) => {
     if (!currentTripId.value) return;
     // 將所有資料（行程、支出、行李）同步到 Firebase
     set(dbRef(db, 'trips/' + currentTripId.value), {
-        shisaLogo: shisaLogo.value,
         days: days.value,
         expenses: expenses.value,
         setup: setup.value,
@@ -368,24 +305,14 @@ const handleCouponUpload = async (e) => {
         }
     });
 });
-                // 1. 先定義一個計時器
-let saveTimer = null;
-
-// 2. 修改監聽器：不要每動一下就傳一次，改為停止編輯 1.5 秒後才儲存
-watch([days, expenses, packingList, setup, coupons, participantsStr], () => {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-        console.log("獅薩搬運中...（自動儲存）");
-        saveCurrentTripData();
-    }, 1500); // 這裡設定 1500 毫秒（1.5秒）
-}, { deep: true });
+                watch([days, expenses, packingList, setup, coupons, participantsStr], () => saveCurrentTripData(), { deep: true });
 
                 let map = null;
                 const initMap = async () => { await nextTick(); if (map) map.remove(); map = L.map('map', { zoomControl: false }).setView([26.2124, 127.6809], 11); L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map); };
                 const centerOnUser = () => { if ("geolocation" in navigator) { navigator.geolocation.getCurrentPosition(pos => { if (map) map.flyTo([pos.coords.latitude, pos.coords.longitude], 15); }); } };
                 watch(viewMode, (v) => { if(v === 'map') initMap(); });
 
-                return { shisaLogo, handleAvatarUpload, syncTripName, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addDay, toggleFlightCard, expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, packingList, newItemName, addPackItem, removePackItem, packingProgress, initMap, centerOnUser, participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon, showTripMenu, tripList, currentTripId, createNewTrip, switchTrip, deleteTrip, getGoogleMapLink };
+                return { shisaLogo, syncTripName, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addDay, toggleFlightCard, expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, packingList, newItemName, addPackItem, removePackItem, packingProgress, initMap, centerOnUser, participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon, showTripMenu, tripList, currentTripId, createNewTrip, switchTrip, deleteTrip, getGoogleMapLink };
             }
         }).mount('#app')
     </script>
