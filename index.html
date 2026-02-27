@@ -24,18 +24,10 @@
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .handwritten-card { background-color: white; border-radius: 2px 15px 5px 12px / 15px 5px 12px 2px !important; box-shadow: 2px 4px 12px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.03); }
-        .time-select-area { flex-shrink: 0; }
+        .time-select-area { min-width: 105px; flex-shrink: 0; }
         select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23E65100'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 4px center; background-size: 10px; }
         .title-input { background: transparent; border: none; font-weight: 900; font-size: 1.25rem; width: 100%; color: var(--shisa-brown); padding: 0; margin: 0; }
         .title-input:focus { outline: none; border-bottom: 2px dashed rgba(93, 64, 55, 0.3); }
-        .auto-grow {
-  resize: none;
-  overflow: hidden;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.time-fixed { width: 92px; }  /* 你要更窄就調 88/84 */
-
         
         /* 備忘錄專用樣式 */
         .memo-textarea { width: 100%; min-height: 450px; border: none; resize: none; background: transparent; line-height: 2; font-size: 15px; color: #4A5568; font-family: inherit; }
@@ -109,42 +101,17 @@
         <div v-for="(item, idx) in currentDay.items" :key="idx" class="handwritten-card p-4 group">
             <div class="flex gap-4 items-start">
                 <div class="time-select-area flex flex-col gap-2">
-                    <input v-model="item.time" type="time"
-  class="font-black text-orange-700 bg-orange-50 rounded-lg px-1 py-0.5 text-[12px] border-none time-fixed text-center">
-
-                    <select v-model="item.type"
-  class="text-[10px] font-black text-orange-600 bg-orange-50 border-none rounded-lg py-0.5 px-1.5 time-fixed truncate">
-
+                    <input v-model="item.time" type="time" class="font-bold text-orange-700 bg-orange-50 rounded-lg p-1 text-sm border-none w-full text-center">
+                    <select v-model="item.type" class="text-[11px] font-bold text-orange-600 bg-orange-50 border-none rounded-lg py-1 px-2 w-full truncate">
                         <option value="spot">📍 景點</option>
                         <option value="food">🍴 美食</option>
                         <option value="hotel">🏨 住宿</option>
                     </select>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <textarea
-  v-model="item.activity"
-  rows="2"
-  class="auto-grow font-black text-slate-700 bg-transparent border-none p-0 w-full text-lg focus:ring-0 leading-snug"
-  placeholder="目的名稱"
-  @input="$event.target.style.height='auto'; $event.target.style.height=$event.target.scrollHeight+'px';"
-></textarea>
-
-                    <textarea
-  v-model="item.location"
-  rows="2"
-  class="auto-grow text-[10px] text-slate-400 bg-transparent border-none p-0 w-full mt-1 focus:ring-0 leading-snug"
-  placeholder="地址或店名"
-  @input="$event.target.style.height='auto'; $event.target.style.height=$event.target.scrollHeight+'px';"
-></textarea>
-
-                    <textarea
-  v-model="item.note"
-  rows="2"
-  class="auto-grow text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 focus:ring-0 border-none leading-snug"
-  placeholder="備註: MapCode/網址/提醒"
-  @input="$event.target.style.height='auto'; $event.target.style.height=$event.target.scrollHeight+'px';"
-></textarea>
-
+                    <input v-model="item.activity" class="font-black text-slate-700 bg-transparent border-none p-0 w-full text-lg focus:ring-0" placeholder="目的名稱">
+                    <input v-model="item.location" class="text-[10px] text-slate-400 bg-transparent border-none p-0 w-full mt-1 focus:ring-0" placeholder="地址或店名">
+                    <input v-model="item.note" class="text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 focus:ring-0 border-none" placeholder="備註: MapCode/網址/提醒">
                 </div>
 
                 <!-- ✅ 右側工具區：新增拖曳把手 -->
@@ -282,14 +249,6 @@
 };
 
                 const memoText = ref('');
-const resizeAllTextareas = () => {
-  requestAnimationFrame(() => {
-    document.querySelectorAll('textarea.auto-grow').forEach((el) => {
-      el.style.height = 'auto';
-      el.style.height = el.scrollHeight + 'px';
-    });
-  });
-};
 
                 const itineraryListEl = ref(null);
 let itinerarySortable = null;
@@ -322,12 +281,10 @@ const initItinerarySortable = () => {
                 const packingProgress = computed(() => packingList.value.length ? (packingList.value.filter(i=>i.checked).length/packingList.value.length)*100 : 0);
                 const paidByPerson = computed(() => { const map = {}; participants.value.forEach(p => map[p] = 0); expenses.value.forEach(e => { if(map[e.payer] !== undefined) map[e.payer] += (e.currency === 'TWD' ? (Number(e.amount) / setup.value.rate) : Number(e.amount)); }); return map; });
 
-               const addItem = () => {
+                const addItem = () => {
   if (!Array.isArray(currentDay.value.items)) currentDay.value.items = [];
   currentDay.value.items.push({ time: '10:00', type: 'spot', activity: '', location: '', note: '' });
-  nextTick(() => resizeAllTextareas());
 };
-
 
                 const removeItem = (idx) => currentDay.value.items.splice(idx, 1);
                 const addDay = () => {
@@ -381,8 +338,6 @@ const initItinerarySortable = () => {
                             coupons.value = data.coupons || [];
                             participantsStr.value = data.participantsStr || '我, 旅伴A';
                             memoText.value = data.memoText || '';
-                            nextTick(() => resizeAllTextareas());
-
                         }
                     });
                 };
@@ -414,8 +369,7 @@ const initItinerarySortable = () => {
                 });
 
                 watch([days, expenses, packingList, setup, coupons, participantsStr, memoText], () => saveCurrentTripData(), { deep: true });
-watch(currentDayIdx, () => nextTick(() => { initItinerarySortable(); resizeAllTextareas(); }));
-
+watch(currentDayIdx, () => nextTick(() => initItinerarySortable()));
 
                 return { 
                     shisaLogo, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addDay, toggleFlightCard, 
