@@ -35,9 +35,12 @@
                 <div class="flex items-center gap-3 flex-1 overflow-hidden">
                     <button @click="showTripMenu = true"><i class="ph-bold ph-list text-2xl"></i></button>
                     <div class="flex items-center gap-2 overflow-hidden flex-1">
-                        <div class="w-12 h-12 rounded-full bg-white border-2 border-orange-400 p-0.5 shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center">
-                            <img :src="shisaLogo" alt="獅薩" class="w-full h-full object-contain">
-                        </div>
+                        <div class="w-12 h-12 rounded-full bg-white border-2 border-orange-400 p-0.5 shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center relative">
+    <input type="file" id="avatar-upload" class="hidden" accept="image/*" @change="handleAvatarUpload">
+    <label for="avatar-upload" class="cursor-pointer w-full h-full flex items-center justify-center">
+        <img :src="shisaLogo" alt="頭像" class="w-full h-full object-contain">
+    </label>
+</div>
                         <div class="overflow-hidden flex-1">
                             <input v-model="setup.destination" class="title-input" placeholder="點擊輸入旅程名稱" @change="syncTripName">
                             <p class="text-[10px] font-bold opacity-60 uppercase truncate">Happy Trip with Shisa!</p>
@@ -210,6 +213,14 @@ const db = getDatabase(app);
         createApp({
             setup() {
                 const shisaLogo = ref("https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg");
+const handleAvatarUpload = (e) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        shisaLogo.value = ev.target.result; // 將新圖片轉為代碼並顯示
+        saveCurrentTripData(); // 儲存到雲端
+    };
+    if (e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
+};
                 
                 const viewMode = ref('plan'), currentDayIdx = ref(0), showSetupModal = ref(false), showTripMenu = ref(false), tripList = ref([]), currentTripId = ref(null);
                 const days = ref([]), setup = ref({ destination: '沖繩 Okinawa', startDate: '2026-04-25', days: 7, rate: 0.215 }), expenses = ref([]), participantsStr = ref('我, 旅伴A'), newItemName = ref(''), packingList = ref([]), coupons = ref([]), newExpense = ref({ item: '', amount: '', payer: '', date: new Date().toISOString().split('T')[0], currency: 'JPY' });
@@ -256,6 +267,7 @@ const db = getDatabase(app);
     onValue(dbRef(db, 'trips/' + id), (snapshot) => {
         const data = snapshot.val();
         if (data) {
+            shisaLogo.value = data.shisaLogo || "https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg";
             days.value = data.days || [];
             expenses.value = data.expenses || [];
             setup.value = data.setup || {};
@@ -281,6 +293,7 @@ const db = getDatabase(app);
     if (!currentTripId.value) return;
     // 將所有資料（行程、支出、行李）同步到 Firebase
     set(dbRef(db, 'trips/' + currentTripId.value), {
+        shisaLogo: shisaLogo.value,
         days: days.value,
         expenses: expenses.value,
         setup: setup.value,
@@ -312,7 +325,7 @@ const db = getDatabase(app);
                 const centerOnUser = () => { if ("geolocation" in navigator) { navigator.geolocation.getCurrentPosition(pos => { if (map) map.flyTo([pos.coords.latitude, pos.coords.longitude], 15); }); } };
                 watch(viewMode, (v) => { if(v === 'map') initMap(); });
 
-                return { shisaLogo, syncTripName, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addDay, toggleFlightCard, expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, packingList, newItemName, addPackItem, removePackItem, packingProgress, initMap, centerOnUser, participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon, showTripMenu, tripList, currentTripId, createNewTrip, switchTrip, deleteTrip, getGoogleMapLink };
+                return { shisaLogo, handleAvatarUpload, syncTripName, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addDay, toggleFlightCard, expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, packingList, newItemName, addPackItem, removePackItem, packingProgress, initMap, centerOnUser, participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon, showTripMenu, tripList, currentTripId, createNewTrip, switchTrip, deleteTrip, getGoogleMapLink };
             }
         }).mount('#app')
     </script>
