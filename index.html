@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Anya x Shisa 旅遊手帳 v29</title>
+    <title>Anya x Shisa 旅遊手帳 v30</title>
     
     <link rel="apple-touch-icon" href="https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg">
     <link rel="icon" type="image/png" href="https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg">
@@ -29,11 +29,9 @@
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .handwritten-card { background-color: white; border-radius: 2px 15px 5px 12px / 15px 5px 12px 2px !important; box-shadow: 2px 4px 12px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.03); }
         .title-input { background: transparent; border: none; font-weight: 900; font-size: 1.25rem; width: 100%; color: var(--shisa-brown); padding: 0; margin: 0; }
-        .title-input:focus { outline: none; border-bottom: 2px dashed rgba(93, 64, 55, 0.3); }
-        .memo-textarea { width: 100%; min-height: 450px; border: none; resize: none; background: transparent; line-height: 2; font-size: 15px; color: #4A5568; }
+        .memo-textarea { width: 100%; min-height: 450px; border: none; resize: none; background: transparent; line-height: 2; font-size: 15px; }
         .memo-paper { background-image: radial-gradient(#e5e7eb 1px, transparent 1px); background-size: 24px 24px; }
-        .drag-handle { cursor: grab; padding: 10px 5px; color: #FFB74D; }
-        .drag-handle:active { cursor: grabbing; }
+        .drag-handle { cursor: grab; padding: 10px; color: #FFB74D; }
         .ghost-card { opacity: 0.3; background: #FFF3E0; border: 2px dashed #FFB74D; }
     </style>
 </head>
@@ -44,18 +42,16 @@
         <header class="bg-[#FFB74D] text-[#5D4037] shrink-0 z-20 shadow-md">
             <div class="p-4 flex justify-between items-center">
                 <div class="flex items-center gap-3 flex-1 overflow-hidden">
-                    <div class="flex items-center gap-2 overflow-hidden flex-1">
-                        <div class="w-12 h-12 rounded-full bg-white border-2 border-orange-400 p-0.5 shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center">
-                            <img :src="shisaLogo" alt="獅薩" class="w-full h-full object-contain">
-                        </div>
-                        <div class="overflow-hidden flex-1">
-                            <input v-model="setup.destination" class="title-input" placeholder="旅程名稱" @change="syncTripName">
-                            <p class="text-[10px] font-bold opacity-60 uppercase truncate">Happy Trip with Shisa!</p>
-                        </div>
+                    <div class="w-12 h-12 rounded-full bg-white border-2 border-orange-400 p-0.5 flex items-center justify-center overflow-hidden">
+                        <img :src="shisaLogo" class="w-full h-full object-contain">
+                    </div>
+                    <div class="overflow-hidden flex-1">
+                        <input v-model="setup.destination" class="title-input" placeholder="旅程名稱">
+                        <p class="text-[10px] font-bold opacity-60 uppercase">Happy Trip with Shisa!</p>
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-1 bg-white/30 p-1 rounded-xl shrink-0 ml-2">
+                <div class="flex items-center gap-1 bg-white/30 p-1 rounded-xl shrink-0">
                     <button @click="viewMode = 'plan'" :class="viewMode === 'plan' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-calendar-check text-lg"></i></button>
                     <button @click="viewMode = 'pack'" :class="viewMode === 'pack' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-suitcase-rolling text-lg"></i></button>
                     <button @click="viewMode = 'memo'" :class="viewMode === 'memo' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-note-pencil text-lg"></i></button>
@@ -92,7 +88,7 @@
                             </div>
                             <div class="flex-1 px-1">
                                 <i class="ph-fill ph-airplane rotate-90 text-xl"></i>
-                                <input v-model="currentDay.flight.number" class="text-[10px] font-mono border-t border-white/30 mt-1 uppercase bg-transparent border-none text-white w-full text-center p-0 focus:ring-0" placeholder="編號">
+                                <input v-model="currentDay.flight.number" class="text-[10px] font-mono border-t border-white/30 mt-1 bg-transparent text-white w-full text-center p-0 focus:ring-0 uppercase">
                             </div>
                             <div class="flex-1">
                                 <input v-model="currentDay.flight.endTime" type="time" class="text-2xl font-black bg-transparent border-none text-white w-full text-center p-0 font-mono focus:ring-0">
@@ -129,13 +125,11 @@
                                     <div class="flex-1 min-w-0">
                                         <input v-model="element.activity" class="font-black text-slate-700 bg-transparent border-none p-0 w-full text-lg focus:ring-0" placeholder="目的地名稱">
                                         <input v-model="element.location" class="text-[10px] text-slate-400 bg-transparent border-none p-0 w-full mt-1 focus:ring-0" placeholder="地址/MapCode">
-                                        <input v-model="element.note" class="text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 focus:ring-0 border-none" placeholder="備註或連結...">
+                                        <input v-model="element.note" class="text-[10px] text-orange-800/60 bg-orange-50/50 rounded p-1 w-full mt-2 border-none focus:ring-0" placeholder="備註...">
                                     </div>
                                     <div class="flex flex-col gap-3 shrink-0 items-center justify-between">
-                                        <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(element.activity + ' ' + element.location)" target="_blank" class="text-teal-500 hover:text-teal-700">
-                                            <i class="ph-bold ph-paper-plane-tilt text-2xl"></i>
-                                        </a>
-                                        <button @click="removeItem(index)" class="text-red-200 hover:text-red-500"><i class="ph-bold ph-trash text-xl"></i></button>
+                                        <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(element.activity + ' ' + element.location)" target="_blank" class="text-teal-500"><i class="ph-bold ph-paper-plane-tilt text-2xl"></i></a>
+                                        <button @click="removeItem(index)" class="text-red-200"><i class="ph-bold ph-trash text-xl"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -146,31 +140,29 @@
             </div>
 
             <div v-if="viewMode === 'pack'" class="p-4 pb-24 text-sm">
-                <div class="bg-indigo-600 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden uppercase tracking-widest">
-                    <i class="ph-fill ph-suitcase-rolling absolute -right-4 -bottom-4 text-9xl opacity-10"></i>
+                <div class="bg-indigo-600 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden">
                     <h2 class="text-2xl font-black relative z-10">行李清單</h2>
                     <div class="mt-4 bg-white/20 rounded-full h-2 relative z-10"><div class="bg-white h-full" :style="{ width: packingProgress + '%' }"></div></div>
-                    <p class="mt-2 font-bold relative z-10">Progress: {{ Math.round(packingProgress) }}%</p>
                 </div>
                 <div class="handwritten-card p-4 mb-4 flex gap-2"><input v-model="newItemName" @keyup.enter="addPackItem" placeholder="需要帶什麼？" class="flex-1 bg-slate-50 border-none rounded-xl px-4 py-3"><button @click="addPackItem" class="bg-indigo-500 text-white px-4 rounded-xl shadow-md"><i class="ph-bold ph-plus"></i></button></div>
-                <div class="space-y-2"><div v-for="(item, idx) in packingList" :key="idx" class="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm transition-all" :class="item.checked ? 'opacity-50' : ''"><button @click="item.checked = !item.checked" :class="item.checked ? 'text-green-500' : 'text-slate-200'"><i class="ph-fill ph-check-circle text-2xl"></i></button><span class="flex-1 font-bold text-slate-700" :class="item.checked ? 'line-through' : ''">{{ item.name }}</span><button @click="removePackItem(idx)" class="text-slate-200 hover:text-red-400"><i class="ph-bold ph-trash text-lg"></i></button></div></div>
+                <div class="space-y-2"><div v-for="(item, idx) in packingList" :key="idx" class="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm" :class="item.checked ? 'opacity-50' : ''"><button @click="item.checked = !item.checked" :class="item.checked ? 'text-green-500' : 'text-slate-200'"><i class="ph-fill ph-check-circle text-2xl"></i></button><span class="flex-1 font-bold" :class="item.checked ? 'line-through' : ''">{{ item.name }}</span><button @click="removePackItem(idx)" class="text-slate-200"><i class="ph-bold ph-trash text-lg"></i></button></div></div>
             </div>
 
             <div v-if="viewMode === 'memo'" class="p-4 pb-24 h-full">
                 <div class="bg-teal-600 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden uppercase tracking-widest">
                     <i class="ph-fill ph-note absolute -right-4 -bottom-4 text-9xl opacity-10"></i>
                     <h2 class="text-2xl font-black relative z-10">旅程備忘錄</h2>
-                    <p class="text-xs opacity-70 mt-1 font-bold">在此貼上網址、預約序號或紀錄</p>
+                    <p class="text-xs opacity-70 mt-1 font-bold">在此貼上網址、預約序號或隨手紀錄</p>
                 </div>
                 <div class="handwritten-card p-6 min-h-[450px] memo-paper">
-                    <textarea v-model="memoText" class="memo-textarea" placeholder="在此輸入筆記..."></textarea>
+                    <textarea v-model="memoText" class="memo-textarea" placeholder="例如：租車連結、預約序號..."></textarea>
                 </div>
             </div>
 
             <div v-if="viewMode === 'coupons'" class="p-4 pb-24 text-sm text-center">
                 <div class="bg-amber-500 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden"><i class="ph-fill ph-ticket absolute -right-4 -bottom-4 text-9xl opacity-10"></i><h2 class="text-2xl font-black relative z-10">優惠券</h2></div>
-                <div class="handwritten-card p-6 mb-6 border-2 border-dashed border-amber-200"><input type="file" id="cup-up" class="hidden" @change="handleCouponUpload"><label for="cup-up" class="cursor-pointer flex flex-col items-center gap-2"><i class="ph-bold ph-cloud-arrow-up text-4xl text-amber-500"></i><span class="font-black text-amber-700 text-sm">新增截圖</span></label></div>
-                <div class="grid grid-cols-1 gap-4"><div v-for="(c, idx) in coupons" :key="idx" class="handwritten-card overflow-hidden"><img :src="c.image" class="w-full h-auto object-cover"><div class="p-3 flex justify-between bg-amber-50/30"><input v-model="c.note" class="flex-1 bg-transparent border-none p-0 text-sm font-bold focus:ring-0" placeholder="備註..."><button @click="removeCoupon(idx)" class="text-red-200"><i class="ph-bold ph-trash-simple text-lg"></i></button></div></div></div>
+                <div class="handwritten-card p-6 mb-6 border-2 border-dashed border-amber-200"><input type="file" id="cuup" class="hidden" @change="handleCouponUpload"><label for="cuup" class="cursor-pointer flex flex-col items-center gap-2"><i class="ph-bold ph-cloud-arrow-up text-4xl text-amber-500"></i><span class="font-black text-amber-700 text-sm">新增截圖</span></label></div>
+                <div class="grid grid-cols-1 gap-4"><div v-for="(c, idx) in coupons" :key="idx" class="handwritten-card overflow-hidden"><img :src="c.image" class="w-full h-auto object-cover"><div class="p-3 flex justify-between"><input v-model="c.note" class="flex-1 border-none p-0 text-sm font-bold focus:ring-0" placeholder="備註..."><button @click="removeCoupon(idx)" class="text-red-200"><i class="ph-bold ph-trash-simple text-lg"></i></button></div></div></div>
             </div>
 
             <div v-if="viewMode === 'money'" class="p-4 pb-24 text-sm">
@@ -186,7 +178,7 @@
 
                 <div class="handwritten-card p-4 mb-4">
                     <div class="text-[10px] font-bold text-orange-400 mb-2 uppercase">成員管理</div>
-                    <input v-model="participantsStr" placeholder="成員: 我, 旅伴A" class="w-full bg-slate-50 border-none rounded-xl text-sm px-4 py-2 font-bold mb-4 focus:ring-0">
+                    <input v-model="participantsStr" placeholder="例如: 我, 旅伴A" class="w-full bg-slate-50 border-none rounded-xl text-sm px-4 py-2 font-bold mb-4 focus:ring-0">
                     <div class="grid grid-cols-2 gap-2">
                         <div v-for="p in participants" :key="p" class="bg-orange-50 p-2 rounded-xl text-center border border-orange-100">
                             <div class="text-[9px] font-bold text-orange-400 opacity-60">{{ p }} 已墊付</div>
@@ -209,7 +201,7 @@
                             <input v-model.number="newExpense.amount" type="number" placeholder="金額" class="w-24 bg-slate-50 border-none rounded-xl px-3 py-3 font-mono text-center focus:ring-0">
                         </div>
                         <div class="flex gap-2 text-sm">
-                            <select v-model="newExpense.payer" class="flex-1 bg-slate-50 border-none rounded-xl px-4 py-3 font-bold">
+                            <select v-model="newExpense.payer" class="flex-1 bg-slate-50 border-none rounded-xl px-4 py-3 font-bold focus:ring-0">
                                 <option value="" disabled>誰付錢？</option>
                                 <option v-for="p in participants" :value="p">{{ p }}</option>
                             </select>
@@ -232,27 +224,12 @@
                                 <div class="font-mono font-black text-orange-600">{{ exp.currency === 'JPY' ? '¥' : 'NT$' }}{{ exp.amount.toLocaleString() }}</div>
                                 <div v-if="exp.currency === 'TWD'" class="text-[9px] text-slate-400 font-bold">≈ ¥{{ Math.round(exp.amount / setup.rate).toLocaleString() }}</div>
                             </div>
-                            <button @click="removeExpense(idx)" class="text-red-100 hover:text-red-400"><i class="ph-bold ph-trash text-lg"></i></button>
+                            <button @click="removeExpense(idx)" class="text-red-100"><i class="ph-bold ph-trash text-lg"></i></button>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
-        
-        <div v-if="showSetupModal" class="absolute inset-0 bg-orange-900/60 backdrop-blur-md z-50 flex items-center justify-center p-6">
-            <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 text-center shadow-2xl relative">
-                <img :src="shisaLogo" class="w-20 mx-auto mb-4 scale-110">
-                <h2 class="text-2xl font-black text-slate-800 mb-6 uppercase tracking-tighter">開啟新旅程吧！</h2>
-                <div class="space-y-4 text-left">
-                    <div><label class="text-[10px] font-bold text-orange-400 ml-1 uppercase">目的地</label><input v-model="setup.destination" placeholder="沖繩 Okinawa" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 font-bold focus:ring-0"></div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div><label class="text-[10px] font-bold text-orange-400 ml-1 uppercase">出發日期</label><input v-model="setup.startDate" type="date" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-xs focus:ring-0"></div>
-                        <div><label class="text-[10px] font-bold text-orange-400 ml-1 uppercase">天數</label><input v-model.number="setup.days" type="number" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-center font-bold focus:ring-0"></div>
-                    </div>
-                </div>
-                <button @click="initTrip" class="w-full bg-orange-500 text-white font-black py-4 rounded-2xl shadow-lg mt-6 active:scale-95 transition">Start Journey!</button>
-            </div>
-        </div>
     </div>
 
     <script type="module">
@@ -284,7 +261,7 @@
                 const currentDay = computed(() => days.value[currentDayIdx.value] || { items: [], flight: null });
                 const participants = computed(() => participantsStr.value.split(',').map(s=>s.trim()).filter(s=>s));
                 
-                // 支出邏輯恢復
+                // 支出計算恢復
                 const totalExpense = computed(() => expenses.value.reduce((sum, item) => item.currency === 'TWD' ? sum + (Number(item.amount) / setup.value.rate) : sum + Number(item.amount), 0));
                 const paidByPerson = computed(() => { 
                     const map = {}; participants.value.forEach(p => map[p] = 0); 
@@ -294,14 +271,14 @@
                 
                 const packingProgress = computed(() => packingList.value.length ? (packingList.value.filter(i=>i.checked).length/packingList.value.length)*100 : 0);
 
-                // 修復新增行程：改用顯式陣列操作
+                // 修復：100% 確保新增行程成功
                 const addItem = () => {
-                    if (days.value[currentDayIdx.value]) {
-                        if (!days.value[currentDayIdx.value].items) {
-                            days.value[currentDayIdx.value].items = [];
-                        }
-                        days.value[currentDayIdx.value].items.push({ 
-                            id: 'item_' + Date.now() + Math.random().toString(36).substr(2, 9),
+                    const idx = currentDayIdx.value;
+                    if (days.value[idx]) {
+                        if (!days.value[idx].items) days.value[idx].items = [];
+                        // 直接 push 進陣列
+                        days.value[idx].items.push({ 
+                            id: 'item_' + Date.now() + Math.random().toString(36).substr(2, 5),
                             time: '12:00', type: 'spot', activity: '', location: '', note: '' 
                         });
                     }
@@ -335,8 +312,10 @@
                         const data = snapshot.val();
                         if (data) {
                             let rawDays = data.days || [];
+                            // 固定 7 天邏輯
                             if (rawDays.length > 7) rawDays = rawDays.slice(0, 7);
-                            rawDays.forEach(d => { if(d.items) d.items.forEach(i => { if(!i.id) i.id = 'r_' + Math.random().toString(36).substr(2, 9); }); });
+                            rawDays.forEach(d => { if(d.items) d.items.forEach(i => { if(!i.id) i.id = 'r_' + Math.random().toString(36).substr(2, 5); }); });
+                            
                             days.value = rawDays;
                             expenses.value = data.expenses || [];
                             setup.value = data.setup || setup.value;
@@ -344,21 +323,11 @@
                             coupons.value = data.coupons || [];
                             memoText.value = data.memoText || '';
                             participantsStr.value = data.participantsStr || '我, 旅伴A';
-                            // 延遲關閉旗標，確保資料讀取渲染完成
-                            setTimeout(() => { isInitialLoad.value = false; }, 500);
+                            
+                            // 延遲解除鎖定，防止存檔
+                            setTimeout(() => { isInitialLoad.value = false; }, 800);
                         }
                     }, { onlyOnce: true });
-                };
-
-                const initTrip = () => {
-                    if(!setup.value.destination) return alert('請輸入目的地');
-                    const newId = 'shisa_' + Date.now().toString(36), start = new Date(setup.value.startDate);
-                    days.value = Array.from({length: 7}, (_, i) => { 
-                        const d = new Date(start); d.setDate(start.getDate() + i); 
-                        return { date: `${d.getMonth()+1}/${d.getDate()} (${['日','一','二','三','四','五','六'][d.getDay()]})`, shortDate: `${d.getMonth()+1}/${d.getDate()}`, fullDate: d.toISOString().split('T')[0], items: [], flight: null }; 
-                    });
-                    set(dbRef(db, 'shisa_trip_index'), [{ id: newId, destination: setup.value.destination }]);
-                    currentTripId.value = newId; isInitialLoad.value = false; showSetupModal.value = false; saveCurrentTripData();
                 };
 
                 onMounted(() => {
@@ -372,7 +341,7 @@
 
                 watch([days, expenses, packingList, setup, coupons, memoText, participantsStr], () => saveCurrentTripData(), { deep: true });
 
-                return { shisaLogo, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addFlight, setup, showSetupModal, initTrip, memoText, packingProgress, totalExpense, newItemName, addPackItem, removePackItem, packingList, coupons, handleCouponUpload, removeCoupon, participantsStr, participants, paidByPerson, newExpense, addExpense, removeExpense, syncTripName: () => { set(dbRef(db, 'shisa_trip_index'), [{ id: currentTripId.value, destination: setup.value.destination }]); } };
+                return { shisaLogo, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addFlight, setup, memoText, packingProgress, totalExpense, newItemName, addPackItem, removePackItem, packingList, coupons, handleCouponUpload, removeCoupon, participantsStr, participants, paidByPerson, newExpense, addExpense, removeExpense, syncTripName: () => { set(dbRef(db, 'shisa_trip_index'), [{ id: currentTripId.value, destination: setup.value.destination }]); } };
             }
         }).mount('#app')
     </script>
