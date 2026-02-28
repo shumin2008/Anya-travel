@@ -91,9 +91,9 @@
                 <div class="mb-6" v-if="currentDay">
                     <div v-if="currentDay.flight" class="relative bg-gradient-to-r from-blue-600 to-blue-400 rounded-2xl text-white shadow-lg p-4">
                         <button @click="currentDay.flight = null" class="absolute top-2 right-2 opacity-50"><i class="ph-bold ph-x"></i></button>
-                        <div class="flex justify-between items-center text-center">
+                        <div class="flex items-center text-center">
                             <div class="flex-1"><input v-model="currentDay.flight.startTime" type="time" class="text-2xl font-black bg-transparent border-none text-white w-full text-center p-0 font-mono"></div>
-                            <div class="flex-1 px-1">
+                            <div class="flex-1 px-1 flex flex-col items-center justify-center">
                                 <i class="ph-fill ph-airplane rotate-90 text-xl"></i>
                                 <!-- ✅ 這裡改成可手動輸入航班號 -->
                                 <input v-model="currentDay.flight.number"
