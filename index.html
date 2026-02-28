@@ -84,30 +84,9 @@
         <main class="flex-1 overflow-y-auto relative hide-scroll bg-[#fdfaf5]">
             <div v-if="viewMode === 'plan'" class="p-4 pb-24">
                 <div class="handwritten-card p-4 mb-4 border-l-8 border-orange-400">
-  <div class="flex items-start justify-between gap-3">
-    <div class="min-w-0">
-      <h2 class="text-2xl font-black text-slate-800">{{ currentDay.date }}</h2>
-      <input v-model="currentDay.title" class="text-sm text-slate-400 bg-transparent border-none w-full p-0 focus:ring-0 font-bold" placeholder="今天的計畫是...">
-    </div>
-
-    <!-- ✅ 天氣顯示（右上角） -->
-    <div class="shrink-0 text-right">
-      <div class="flex items-center justify-end gap-2">
-        <span class="text-2xl">{{ weatherEmoji }}</span>
-        <div class="text-2xl font-black text-indigo-600 leading-none">
-          {{ weather.temp !== null ? Math.round(weather.temp) + '°' : '--' }}
-        </div>
-      </div>
-      <div class="text-[11px] font-bold text-slate-400 mt-1 flex items-center justify-end gap-1">
-        <i class="ph-bold ph-map-pin"></i>
-        <span class="max-w-[160px] truncate">{{ weather.place || weatherCity }}</span>
-      </div>
-      <button @click="refreshWeather" class="text-[10px] font-bold text-slate-400 hover:text-slate-600 mt-1">
-        更新天氣
-      </button>
-    </div>
-  </div>
-</div>
+                    <h2 class="text-2xl font-black text-slate-800">{{ currentDay.date }}</h2>
+                    <input v-model="currentDay.title" class="text-sm text-slate-400 bg-transparent border-none w-full p-0 focus:ring-0 font-bold" placeholder="今天的計畫是...">
+                </div>
 
                 <div class="mb-6" v-if="currentDay">
                     <!-- 航班卡片 (登機證樣式) -->
@@ -164,27 +143,16 @@
   <div ref="itineraryListEl" :key="currentDay.fullDate" class="space-y-6">
     <div v-for="(item, idx) in currentDay.items" :key="idx" class="handwritten-card p-4 group">
       <div class="flex gap-4 items-start">
-<div class="time-select-area flex flex-col gap-3 items-center">
-  <!-- 時間大方塊 -->
-  <div class="w-[92px] h-[78px] rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-    <input
-      v-model="item.time"
-      type="time"
-      class="w-full text-center font-black text-slate-700 bg-transparent border-none p-0 focus:ring-0 font-mono text-[16px]"
-      style="text-align:center;"
-    >
-  </div>
-
-  <!-- 類型下拉 -->
-  <div class="w-[92px]">
-    <select v-model="item.type"
-  class="w-full text-[12px] font-black text-orange-700 bg-orange-50 border border-orange-100 rounded-xl py-2 pl-2 pr-6 focus:ring-0">
-  <option value="spot">📍 景點</option>
-  <option value="food">🍴 美食</option>
-  <option value="hotel">🏨 住宿</option>
-</select>
-  </div>
-</div>
+        <div class="time-select-area flex flex-col gap-2">
+          <input v-model="item.time" type="time"
+            class="font-black text-orange-700 bg-orange-50 rounded-lg px-1 py-0.5 text-[12px] border-none time-fixed text-center">
+          <select v-model="item.type"
+            class="text-[10px] font-black text-orange-600 bg-orange-50 border-none rounded-lg py-0.5 px-1.5 time-fixed truncate">
+            <option value="spot">📍 景點</option>
+            <option value="food">🍴 美食</option>
+            <option value="hotel">🏨 住宿</option>
+          </select>
+        </div>
 
         <div class="flex-1 min-w-0">
           <textarea v-model="item.activity" rows="2"
@@ -333,63 +301,6 @@
 
         createApp({
             setup() {
-                // ===== 天氣（那霸） =====
-const weatherCity = ref('那霸');
-const weather = ref({ temp: null, code: null, place: '' });
-
-const weatherCodeToEmoji = (code) => {
-  if (code === 0) return '☀️';
-  if ([1, 2].includes(code)) return '🌤️';
-  if (code === 3) return '☁️';
-  if ([45, 48].includes(code)) return '🌫️';
-  if ([51, 53, 55, 56, 57].includes(code)) return '🌦️';
-  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return '🌧️';
-  if ([71, 73, 75, 77, 85, 86].includes(code)) return '🌨️';
-  if ([95, 96, 99].includes(code)) return '⛈️';
-  return '🌡️';
-};
-
-const weatherEmoji = computed(() => weatherCodeToEmoji(weather.value.code));
-
-const fetchWeather = async () => {
-  // 1) 地理編碼：優先中文，查不到就用英文 fallback
-  const tryNames = [weatherCity.value, 'Naha', 'Naha, Okinawa'];
-  let hit = null;
-
-  for (const name of tryNames) {
-    const geoUrl =
-      'https://geocoding-api.open-meteo.com/v1/search?count=1&language=zh&format=json&name=' +
-      encodeURIComponent(name);
-    const geoRes = await fetch(geoUrl);
-    const geoJson = await geoRes.json();
-    hit = geoJson?.results?.[0];
-    if (hit) break;
-  }
-  if (!hit) return;
-
-  const { latitude, longitude, name, admin1, country } = hit;
-  weather.value.place = [name, admin1, country].filter(Boolean).join(', ');
-
-  // 2) 即時天氣
-  const wUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=Asia%2FTokyo`;
-  const wRes = await fetch(wUrl);
-  const wJson = await wRes.json();
-
-  const temp = wJson?.current?.temperature_2m;
-  const code = wJson?.current?.weather_code;
-
-  weather.value.temp = (typeof temp === 'number') ? temp : null;
-  weather.value.code = (typeof code === 'number') ? code : null;
-};
-
-const refreshWeather = async () => {
-  try {
-    await fetchWeather();
-  } catch (e) {
-    console.error('weather fetch failed:', e);
-  }
-};
-// ===== /天氣 =====
                 const shisaLogo = ref("https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg");
                 const viewMode = ref('plan'), currentDayIdx = ref(0), showSetupModal = ref(false), tripList = ref([]), currentTripId = ref(null);
                 const days = ref([]), setup = ref({ destination: '沖繩 Okinawa', startDate: '2026-04-25', days: 7, rate: 0.215 }), expenses = ref([]), participantsStr = ref('我, 旅伴A'), newItemName = ref(''), packingList = ref([]), coupons = ref([]), newExpense = ref({ item: '', amount: '', payer: '', date: new Date().toISOString().split('T')[0], currency: 'JPY' });
@@ -579,8 +490,6 @@ const initItinerarySortable = () => {
                 };
 
                 onMounted(() => {
-                    refreshWeather();
-setInterval(refreshWeather, 30 * 60 * 1000);
                     nextTick(() => initItinerarySortable());
                     onValue(dbRef(db, 'shisa_trip_index'), (snapshot) => {
                         const index = snapshot.val();
@@ -602,7 +511,7 @@ watch(currentDayIdx, () => nextTick(() => { initItinerarySortable(); resizeAllTe
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon,
-                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weatherCity, weather, weatherEmoji, refreshWeather
+                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink
                 };
             }
         }).mount('#app')
