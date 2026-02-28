@@ -186,6 +186,18 @@
                     <p class="text-xs opacity-70 mt-1 font-bold">在此貼上網址、重要代碼或隨手紀錄</p>
                 </div>
                 <div class="handwritten-card p-6 min-h-[450px] memo-paper">
+
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+  <button
+    v-for="(l, i) in memoLinks"
+    :key="i"
+    @click="openLink(l.url)"
+    class="handwritten-card px-4 py-3 flex items-center justify-center gap-2 font-black text-teal-700 bg-white hover:bg-teal-50 active:scale-95 transition"
+  >
+    <i class="ph-bold ph-link-simple text-lg"></i>
+    <span class="truncate">{{ l.label }}</span>
+  </button>
+</div>
                     <textarea v-model="memoText" class="memo-textarea" placeholder="例如：&#10;1. 租車預約單 https://...&#10;2. 潛水預約代碼: ABC123&#10;3. 伴手禮購物清單..."></textarea>
                 </div>
             </div>
@@ -261,7 +273,15 @@
   if (!query) return;
   window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank');
 };
+const memoLinks = ref([
+  { label: '沖繩停車場地圖', url: 'https://www.locationsmart.org/?tag=_service_parking' },
+  { label: 'Donki優惠券', url: 'https://japanportal.donki-global.com/coupon/cp001_zhtw.html' }
+]);
 
+const openLink = (url) => {
+  if (!url) return;
+  window.location.href = url; // 同分頁開啟（不會新增空白分頁）
+};
                 const memoText = ref('');
 const resizeAllTextareas = () => {
   requestAnimationFrame(() => {
@@ -403,7 +423,7 @@ watch(currentDayIdx, () => nextTick(() => { initItinerarySortable(); resizeAllTe
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon,
-                    memoText, syncTripName, itineraryListEl, openGoogleMap
+                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink
                 };
             }
         }).mount('#app')
