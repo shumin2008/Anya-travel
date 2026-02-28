@@ -251,6 +251,12 @@
                     <div class="mt-4 bg-white/20 rounded-full h-2 relative z-10"><div class="bg-white h-full" :style="{ width: packingProgress + '%' }"></div></div>
                     <p class="mt-2 font-bold relative z-10">Progress: {{ Math.round(packingProgress) }}%</p>
                 </div>
+                <div class="handwritten-card p-4 mb-4">
+  <div class="text-[10px] font-bold text-indigo-200/80 mb-2 uppercase">我是誰</div>
+  <select v-model="currentUser" class="w-full bg-slate-50 border-none rounded-xl px-4 py-3 font-black text-slate-700">
+    <option v-for="p in participants" :key="p" :value="p">{{ p }}</option>
+  </select>
+</div>
                 <div class="handwritten-card p-4 mb-4 flex gap-2 items-center">
   <input v-model="newItemName" @keyup.enter="addPackItem" placeholder="需要帶什麼？"
     class="flex-1 min-w-0 bg-slate-50 border-none rounded-xl px-3 py-3 truncate">
@@ -259,9 +265,27 @@
     <i class="ph-bold ph-plus"></i>
   </button>
 </div>
-                <div class="space-y-2"><div v-for="(item, idx) in packingList" :key="idx" class="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm transition-all" :class="item.checked ? 'opacity-50' : ''"><button @click="item.checked = !item.checked" :class="item.checked ? 'text-green-500' : 'text-slate-200'"><i class="ph-fill ph-check-circle text-2xl"></i></button><span class="flex-1 font-bold text-slate-700" :class="item.checked ? 'line-through' : ''">{{ item.name }}</span><button @click="removePackItem(idx)" class="text-slate-200 hover:text-red-400"><i class="ph-bold ph-trash text-lg"></i></button></div></div>
-            </div>
+                <div class="space-y-2">
+  <div v-for="(item, idx) in packingList" :key="item.id || idx"
+    class="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm transition-all"
+    :class="(item.checks && item.checks[currentUser]) ? 'opacity-50' : ''">
 
+    <button @click="togglePackCheck(item)"
+      :class="(item.checks && item.checks[currentUser]) ? 'text-green-500' : 'text-slate-200'">
+      <i class="ph-fill ph-check-circle text-2xl"></i>
+    </button>
+
+    <span class="flex-1 font-bold text-slate-700"
+      :class="(item.checks && item.checks[currentUser]) ? 'line-through' : ''">
+      {{ item.name }}
+    </span>
+
+    <button @click="removePackItem(idx)" class="text-slate-200 hover:text-red-400">
+      <i class="ph-bold ph-trash text-lg"></i>
+    </button>
+  </div>
+</div>
+</div>
             <div v-if="viewMode === 'memo'" class="p-4 pb-24 h-full">
                 <div class="bg-teal-600 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden uppercase tracking-widest">
                     <i class="ph-fill ph-note absolute -right-4 -bottom-4 text-9xl opacity-10"></i>
@@ -541,12 +565,49 @@ const initItinerarySortable = () => {
 };
 
                 
+                const ensurePackingItemSchema = (item) => {
+  // 舊資料：{name, checked}
+  if (!item) return null;
+
+  if (!item.id) item.id = 'pk_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
+  if (!item.createdAt) item.createdAt = Date.now();
+  if (!item.createdBy) item.createdBy = currentUser.value || '我';
+
+  // checks：每人一個 true/false
+  if (!item.checks || typeof item.checks !== 'object') {
+    item.checks = {};
+    // 把舊 checked 轉成「當前使用者」的勾選
+    if (typeof item.checked === 'boolean') item.checks[item.createdBy] = item.checked;
+  }
+
+  // 確保所有 participants 都有 key（預設 false）
+  participants.value.forEach((p) => {
+    if (item.checks[p] === undefined) item.checks[p] = false;
+  });
+
+  // 不再使用 checked（避免混淆）
+  delete item.checked;
+
+  return item;
+};
                 const currentDay = computed(() => days.value[currentDayIdx.value] || {items:[], flight:null});
                 const participants = computed(() => participantsStr.value.split(',').map(s=>s.trim()).filter(s=>s));
                 const totalExpense = computed(() => expenses.value.reduce((sum, item) => item.currency === 'TWD' ? sum + (Number(item.amount) / setup.value.rate) : sum + Number(item.amount), 0));
-                const packingProgress = computed(() => packingList.value.length ? (packingList.value.filter(i=>i.checked).length/packingList.value.length)*100 : 0);
-                const paidByPerson = computed(() => { const map = {}; participants.value.forEach(p => map[p] = 0); expenses.value.forEach(e => { if(map[e.payer] !== undefined) map[e.payer] += (e.currency === 'TWD' ? (Number(e.amount) / setup.value.rate) : Number(e.amount)); }); return map; });
+                const packingProgress = computed(() => {
+  const list = packingList.value || [];
+  if (!list.length) return 0;
 
+  const u = currentUser.value || '我';
+  const done = list.filter((it) => {
+    ensurePackingItemSchema(it);
+    return !!it.checks?.[u];
+  }).length;
+
+  return (done / list.length) * 100;
+});
+                const paidByPerson = computed(() => { const map = {}; participants.value.forEach(p => map[p] = 0); expenses.value.forEach(e => { if(map[e.payer] !== undefined) map[e.payer] += (e.currency === 'TWD' ? (Number(e.amount) / setup.value.rate) : Number(e.amount)); }); return map; });
+const currentUser = ref(localStorage.getItem('shisa_current_user') || '我');
+watch(currentUser, (v) => localStorage.setItem('shisa_current_user', v || '我'));
                const timeHHMM = (t) => {
   if (!t) return '--:--';
   // t 會是 "HH:MM"
@@ -595,7 +656,25 @@ const timePeriod = (t) => {
   arrivalOffset: '0',
   endAirport: ''
 };
-                const addPackItem = () => { if(newItemName.value.trim()){ packingList.value.unshift({name: newItemName.value, checked: false}); newItemName.value = ''; } };
+                const addPackItem = () => {
+  const name = (newItemName.value || '').trim();
+  if (!name) return;
+
+  const item = ensurePackingItemSchema({
+    name,
+    createdAt: Date.now(),
+    createdBy: currentUser.value || '我',
+    checks: {}
+  });
+
+  packingList.value.unshift(item);
+  newItemName.value = '';
+};
+                const togglePackCheck = (item) => {
+  ensurePackingItemSchema(item);
+  const u = currentUser.value || '我';
+  item.checks[u] = !item.checks[u];
+};
                 const removePackItem = (idx) => packingList.value.splice(idx, 1);
                 const addExpense = () => { if(newExpense.value.item && newExpense.value.amount && newExpense.value.payer){ expenses.value.unshift({...newExpense.value}); newExpense.value.item = ''; newExpense.value.amount = ''; } };
                 const removeExpense = (idx) => expenses.value.splice(idx, 1);
@@ -627,7 +706,7 @@ const timePeriod = (t) => {
   days.value = (data.days || []).slice(0, 7);
   expenses.value = data.expenses || [];
   setup.value = data.setup || {};
-  packingList.value = data.packingList || [];
+  packingList.value = (data.packingList || []).map(ensurePackingItemSchema).filter(Boolean);
   coupons.value = data.coupons || [];
   participantsStr.value = data.participantsStr || '我, 旅伴A';
   memoText.value = data.memoText || '';
@@ -708,7 +787,7 @@ watch(currentDayIdx, () => nextTick(() => { initItinerarySortable(); resizeAllTe
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon,
-                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod, newMemoLink, addMemoLink
+                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod, newMemoLink, addMemoLink, currentUser, togglePackCheck
                 };
             }
         }).mount('#app')
