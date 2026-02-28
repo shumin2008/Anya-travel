@@ -187,15 +187,15 @@
                 </div>
                 <div class="handwritten-card p-6 min-h-[450px] memo-paper">
 
-                    <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="grid grid-cols-1 gap-3 mb-6">
   <button
     v-for="(l, i) in memoLinks"
     :key="i"
     @click="openLink(l.url)"
-    class="handwritten-card px-4 py-3 flex items-center justify-center gap-2 font-black text-teal-700 bg-white hover:bg-teal-50 active:scale-95 transition"
+    class="handwritten-card px-4 py-3 flex items-start justify-center gap-2 font-black text-teal-700 bg-white hover:bg-teal-50 active:scale-95 transition"
   >
     <i class="ph-bold ph-link-simple text-lg"></i>
-    <span class="truncate">{{ l.label }}</span>
+    <span class="whitespace-normal break-words text-center leading-snug">{{ memoLinks[0].label }}</span>
   </button>
 </div>
                     <textarea v-model="memoText" class="memo-textarea" placeholder="例如：&#10;1. 租車預約單 https://...&#10;2. 潛水預約代碼: ABC123&#10;3. 伴手禮購物清單..."></textarea>
