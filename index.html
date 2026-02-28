@@ -15,8 +15,9 @@
 <meta name="theme-color" content="#FFB74D">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script><script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    
 
 
     <style>
@@ -394,7 +395,9 @@
     });
   }
 </script>
+    
     <script type="module">
+        import Sortable from "https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/modular/sortable.esm.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref as dbRef, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
@@ -791,7 +794,9 @@ const timePeriod = (t) => {
 
                 watch([days, expenses, packingList, setup, coupons, participantsStr, memoText, memoLinks], () => scheduleSave(), { deep: true });
 watch(currentDayIdx, () => nextTick(() => { initItinerarySortable(); resizeAllTextareas(); }));
-
+watch(viewMode, (m) => {
+  if (m === 'plan') nextTick(() => initItinerarySortable());
+});
 
                 return { 
                     shisaLogo, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addDay, toggleFlightCard, 
