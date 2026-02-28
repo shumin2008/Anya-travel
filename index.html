@@ -89,23 +89,56 @@
                 </div>
 
                 <div class="mb-6" v-if="currentDay">
-                    <div v-if="currentDay.flight" class="relative bg-gradient-to-r from-blue-600 to-blue-400 rounded-2xl text-white shadow-lg p-4">
-                        <button @click="currentDay.flight = null" class="absolute top-2 right-2 opacity-50"><i class="ph-bold ph-x"></i></button>
-                        <div class="flex items-center text-center">
-                            <div class="flex-1"><input v-model="currentDay.flight.startTime" type="time" class="text-2xl font-black bg-transparent border-none text-white w-full text-center p-0 font-mono"></div>
-                            <div class="flex-1 px-1 flex flex-col items-center justify-center">
-                                <i class="ph-fill ph-airplane rotate-90 text-xl"></i>
-                                <!-- ✅ 這裡改成可手動輸入航班號 -->
-                                <input v-model="currentDay.flight.number"
-  class="block w-full text-center text-[10px] font-mono border-t border-white/30 mt-1 uppercase bg-transparent p-0 outline-none"
-  style="text-align:center;"
-  placeholder="航班號">
-                            </div>
-                            <div class="flex-1"><input v-model="currentDay.flight.endTime" type="time" class="text-2xl font-black bg-transparent border-none text-white w-full text-center p-0 font-mono"></div>
-                        </div>
-                    </div>
-                    <button v-else @click="toggleFlightCard" class="w-full py-3 border-2 border-dashed border-orange-200 rounded-2xl text-orange-300 flex items-center justify-center gap-2"><i class="ph-bold ph-airplane-tilt"></i> 新增當日航班</button>
-                </div>
+                    <!-- 航班卡片 (登機證樣式) -->
+<div class="mb-6">
+  <div v-if="currentDay.flight" class="relative bg-gradient-to-r from-blue-600 to-teal-500 rounded-2xl text-white shadow-lg overflow-hidden">
+    <div class="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-50 rounded-full z-10"></div>
+    <div class="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-50 rounded-full z-10"></div>
+    <div class="p-4 relative z-0">
+      <!-- ✅ 這裡改成關閉航班卡片 -->
+      <button @click="currentDay.flight = null" class="absolute top-2 right-2 text-white/50 hover:text-white hover:bg-white/20 rounded-full p-1 transition"><i class="ph-bold ph-x"></i></button>
+
+      <div class="flex justify-between items-center mb-1 pt-2">
+        <!-- 出發 -->
+        <div class="flex flex-col items-center w-1/3">
+          <input v-model="currentDay.flight.startTime" type="time" class="text-2xl font-black bg-transparent border-b border-white/30 w-full text-center text-white placeholder-white/50 focus:outline-none focus:border-white font-mono p-0">
+          <div class="text-[9px] opacity-60 mt-1">起飛 (當地時間)</div>
+          <input v-model="currentDay.flight.startAirport" class="text-sm font-bold opacity-90 bg-transparent border-none text-center w-full text-teal-100 placeholder-white/50 focus:ring-0 uppercase p-0" placeholder="TPE">
+        </div>
+
+        <!-- 資訊 -->
+        <div class="flex flex-col items-center justify-center w-1/3 px-2">
+          <i class="ph-fill ph-airplane text-2xl mb-1 transform rotate-90"></i>
+          <input v-model="currentDay.flight.number" class="text-[10px] font-mono tracking-widest opacity-80 bg-transparent border-none text-center w-full text-white placeholder-white/50 focus:ring-0 uppercase p-0" placeholder="BR198">
+          <div class="w-full h-0.5 bg-white/30 rounded-full mt-1"></div>
+        </div>
+
+        <!-- 抵達 -->
+        <div class="flex flex-col items-center w-1/3">
+          <input v-model="currentDay.flight.endTime" type="time" class="text-2xl font-black bg-transparent border-b border-white/30 w-full text-center text-white placeholder-white/50 focus:outline-none focus:border-white font-mono p-0">
+
+          <div class="relative w-full mt-0.5">
+            <select v-model="currentDay.flight.arrivalOffset" class="appearance-none bg-black/20 text-white text-[9px] rounded border-none w-full py-0.5 px-1 text-center focus:ring-0 cursor-pointer hover:bg-black/30">
+              <option value="0" class="text-slate-800">同日抵達</option>
+              <option value="1" class="text-slate-800">+1天 (隔日)</option>
+              <option value="-1" class="text-slate-800">-1天 (前日)</option>
+            </select>
+            <div v-if="currentDay.flight.arrivalOffset != 0" class="absolute -top-8 right-0 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded shadow font-bold animate-pulse">
+              {{ currentDay.flight.arrivalOffset > 0 ? '+1' : '-1' }}
+            </div>
+          </div>
+
+          <input v-model="currentDay.flight.endAirport" class="text-sm font-bold opacity-90 bg-transparent border-none text-center w-full text-teal-100 placeholder-white/50 focus:ring-0 uppercase p-0" placeholder="NRT">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button v-else @click="toggleFlightCard" class="w-full py-3 border-2 border-dashed border-slate-300 rounded-2xl text-slate-400 hover:border-teal-400 hover:text-teal-500 hover:bg-teal-50/50 transition flex items-center justify-center gap-2 group">
+    <i class="ph-bold ph-airplane-tilt text-lg group-hover:scale-110 transition-transform"></i>
+    <span class="text-sm font-bold">新增當日航班資訊</span>
+  </button>
+</div>
 <div class="relative pl-4 border-l-2 border-orange-200 space-y-6">
   <div ref="itineraryListEl" :key="currentDay.fullDate" class="space-y-6">
     <div v-for="(item, idx) in currentDay.items" :key="idx" class="handwritten-card p-4 group">
@@ -348,7 +381,14 @@ const initItinerarySortable = () => {
   });
 };
 
-                const toggleFlightCard = () => currentDay.value.flight = { startTime: '11:16', number: '', endTime: '14:00' };
+                const toggleFlightCard = () => currentDay.value.flight = {
+  startTime: '11:16',
+  startAirport: '',
+  number: '',
+  endTime: '14:00',
+  arrivalOffset: '0',
+  endAirport: ''
+};
                 const addPackItem = () => { if(newItemName.value.trim()){ packingList.value.unshift({name: newItemName.value, checked: false}); newItemName.value = ''; } };
                 const removePackItem = (idx) => packingList.value.splice(idx, 1);
                 const addExpense = () => { if(newExpense.value.item && newExpense.value.amount && newExpense.value.payer){ expenses.value.unshift({...newExpense.value}); newExpense.value.item = ''; newExpense.value.amount = ''; } };
@@ -378,16 +418,61 @@ const initItinerarySortable = () => {
                     onValue(dbRef(db, 'trips/' + id), (snapshot) => {
                         const data = snapshot.val();
                         if (data) {
-                            days.value = (data.days || []).slice(0, 7);
-                            expenses.value = data.expenses || [];
-                            setup.value = data.setup || {};
-                            packingList.value = data.packingList || [];
-                            coupons.value = data.coupons || [];
-                            participantsStr.value = data.participantsStr || '我, 旅伴A';
-                            memoText.value = data.memoText || '';
-                            nextTick(() => { resizeAllTextareas(); initItinerarySortable(); });
+  // ✅ 只留 7 天，並補齊舊 flight 欄位（startAirport/endAirport/arrivalOffset）
+  const patchedDays = (data.days || []).slice(0, 7).map((d) => {
+    if (!d) return d;
 
-                        }
+    // 保留原 day 結構
+    const day = { ...d };
+
+    // 補 items 避免 undefined
+    if (!Array.isArray(day.items)) day.items = [];
+
+    // 補 flight 欄位
+    if (day.flight) {
+      day.flight = {
+        startTime: '',
+        startAirport: '',
+        number: '',
+        endTime: '',
+        arrivalOffset: '0',
+        endAirport: '',
+        ...day.flight
+      };
+
+      // 確保 arrivalOffset 是字串（配合 <option value="0">）
+      if (day.flight.arrivalOffset === undefined || day.flight.arrivalOffset === null || day.flight.arrivalOffset === '') {
+        day.flight.arrivalOffset = '0';
+      } else {
+        day.flight.arrivalOffset = String(day.flight.arrivalOffset);
+      }
+
+      // 確保新欄位不是 undefined
+      if (day.flight.startAirport === undefined) day.flight.startAirport = '';
+      if (day.flight.endAirport === undefined) day.flight.endAirport = '';
+    }
+
+    return day;
+  });
+
+  days.value = patchedDays;
+  expenses.value = data.expenses || [];
+  setup.value = data.setup || {};
+  packingList.value = data.packingList || [];
+  coupons.value = data.coupons || [];
+  participantsStr.value = data.participantsStr || '我, 旅伴A';
+  memoText.value = data.memoText || '';
+
+  nextTick(() => { resizeAllTextareas(); initItinerarySortable(); });
+
+  // （可選）要不要立刻寫回 Firebase 做「資料遷移」：
+  // 若你希望一勞永逸，解除註解下面這段
+  /*
+  if ((data.days || []).length !== patchedDays.length || JSON.stringify((data.days || []).slice(0, 7)) !== JSON.stringify(patchedDays)) {
+    set(dbRef(db, 'trips/' + id + '/days'), JSON.parse(JSON.stringify(patchedDays)));
+  }
+  */
+}
                     });
                 };
 
