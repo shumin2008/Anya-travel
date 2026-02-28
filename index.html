@@ -277,7 +277,7 @@
             </div>
 
             <div v-if="viewMode === 'coupons'" class="p-4 pb-24 text-sm text-center">
-                <div class="bg-amber-500 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden"><i class="ph-fill ph-ticket absolute -right-4 -bottom-4 text-9xl opacity-10"></i><h2 class="text-2xl font-black relative z-10">優惠券截圖</h2></div>
+                <div class="bg-amber-500 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden"><i class="ph-fill ph-ticket absolute -right-4 -bottom-4 text-9xl opacity-10"></i><h2 class="text-2xl font-black relative z-10">優惠券</h2></div>
                 <div class="handwritten-card p-6 mb-6 border-2 border-dashed border-amber-200"><input type="file" id="coupon-upload" class="hidden" accept="image/*" @change="handleCouponUpload"><label for="coupon-upload" class="cursor-pointer flex flex-col items-center gap-2"><i class="ph-bold ph-cloud-arrow-up text-4xl text-amber-500"></i><span class="font-black text-amber-700 text-sm">新增優惠券截圖</span></label></div>
                 <div class="grid grid-cols-1 gap-4"><div v-for="(coupon, idx) in coupons" :key="idx" class="handwritten-card overflow-hidden"><img :src="coupon.image" class="w-full h-auto object-cover"><div class="p-3 flex justify-between bg-amber-50/30"><input v-model="coupon.note" class="flex-1 bg-transparent border-none p-0 text-sm font-bold text-amber-900 focus:ring-0 text-left" placeholder="備註..."><button @click="removeCoupon(idx)" class="text-red-200 hover:text-red-500"><i class="ph-bold ph-trash-simple text-lg"></i></button></div></div></div>
             </div>
