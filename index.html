@@ -652,21 +652,44 @@ const timePeriod = (t) => {
 };
 
                 onMounted(() => {
-                    startGeoWeather();
-                    nextTick(() => initItinerarySortable());
-                    onValue(dbRef(db, 'shisa_trip_index'), (snapshot) => {
-  const index = snapshot.val();
-  isIndexLoading.value = false; // ✅ 一拿到回應就結束 loading
+  startGeoWeather();
+  nextTick(() => initItinerarySortable());
 
-  if (Array.isArray(index) && index.length > 0) {
-    tripList.value = index;
-    showSetupModal.value = false; // ✅ 明確關掉，避免閃
-    if (!currentTripId.value) switchTrip(tripList.value[0].id);
-  } else {
-    showSetupModal.value = true;
-  }
+  const indexRef = dbRef(db, 'shisa_trip_index');
+
+  // ✅ 8 秒沒回應就放行（避免永遠卡住）
+  const t = setTimeout(() => {
+    if (isIndexLoading.value) {
+      console.warn('shisa_trip_index timeout');
+      isIndexLoading.value = false;
+      showSetupModal.value = true; // 或者你想顯示「載入失敗」也可以
+    }
+  }, 8000);
+
+  // ✅ onValue 成功 / 失敗都要結束 loading
+  onValue(
+    indexRef,
+    (snapshot) => {
+      clearTimeout(t);
+      isIndexLoading.value = false;
+
+      const index = snapshot.val();
+      if (Array.isArray(index) && index.length > 0) {
+        tripList.value = index;
+        showSetupModal.value = false;
+        if (!currentTripId.value) switchTrip(tripList.value[0].id);
+      } else {
+        showSetupModal.value = true;
+      }
+    },
+    (err) => {
+      clearTimeout(t);
+      console.error('shisa_trip_index read failed:', err);
+      isIndexLoading.value = false;
+      showSetupModal.value = true; // 讀不到也先讓使用者能操作
+    }
+  );
 });
-                });
 
                 watch([days, expenses, packingList, setup, coupons, participantsStr, memoText, memoLinks], () => saveCurrentTripData(), { deep: true });
 watch(currentDayIdx, () => nextTick(() => { initItinerarySortable(); resizeAllTextareas(); }));
