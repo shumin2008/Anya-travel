@@ -1,0 +1,20 @@
+{
+  "name": "2026 OKINAWA",
+  "short_name": "2026沖繩",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFB74D",
+  "theme_color": "#FFB74D",
+  "icons": [
+    {
+      "src": "https://cdn.phototourl.com/uploads/2026-02-27-dbb392e6-6884-4b06-980b-2719bb6c5aa5.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn.phototourl.com/uploads/2026-02-27-dbb392e6-6884-4b06-980b-2719bb6c5aa5.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
