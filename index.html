@@ -616,20 +616,23 @@ const timePeriod = (t) => {
                     onValue(dbRef(db, 'trips/' + id), (snapshot) => {
                         const data = snapshot.val();
                         if (data) {
-                            days.value = (data.days || []).slice(0, 7);
-                            expenses.value = data.expenses || [];
-                            setup.value = data.setup || {};
-                            packingList.value = data.packingList || [];
-                            coupons.value = data.coupons || [];
-                            participantsStr.value = data.participantsStr || '我, 旅伴A';
-                            memoText.value = data.memoText || '';
-                            nextTick(() => { resizeAllTextareas(); initItinerarySortable(); });
-memoLinks.value = Array.isArray(data.memoLinks) && data.memoLinks.length
-  ? data.memoLinks
-  : [
-      { label: '沖繩停車場地圖', url: 'https://www.locationsmart.org/?tag=_service_parking' },
-      { label: 'Donki優惠券', url: 'https://japanportal.donki-global.com/coupon/cp001_zhtw.html' }
-    ];
+  days.value = (data.days || []).slice(0, 7);
+  expenses.value = data.expenses || [];
+  setup.value = data.setup || {};
+  packingList.value = data.packingList || [];
+  coupons.value = data.coupons || [];
+  participantsStr.value = data.participantsStr || '我, 旅伴A';
+  memoText.value = data.memoText || '';
+
+  memoLinks.value = Array.isArray(data.memoLinks) && data.memoLinks.length
+    ? data.memoLinks
+    : [
+        { label: '沖繩停車場地圖', url: 'https://www.locationsmart.org/?tag=_service_parking' },
+        { label: 'Donki優惠券', url: 'https://japanportal.donki-global.com/coupon/cp001_zhtw.html' }
+      ];
+
+  nextTick(() => { resizeAllTextareas(); initItinerarySortable(); });
+}
                         }
                     });
                 };
