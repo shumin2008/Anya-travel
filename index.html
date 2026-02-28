@@ -317,7 +317,7 @@
             </div>
         </main>
         
-        <div v-if="showSetupModal" class="absolute inset-0 bg-orange-900/60 backdrop-blur-md z-50 flex items-center justify-center p-6">
+        <div v-if="!isIndexLoading && showSetupModal" class="absolute inset-0 ...">
             <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 text-center shadow-2xl relative"><img :src="shisaLogo" class="w-20 mx-auto mb-4 scale-110"><h2 class="text-2xl font-black text-slate-800 mb-6 uppercase tracking-tighter">開啟新旅程吧！</h2><div class="space-y-4 text-left"><div><label class="text-[10px] font-bold text-orange-400 ml-1 uppercase">Destination</label><input v-model="setup.destination" placeholder="例如: Okinawa 沖繩" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 font-bold focus:ring-0"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] font-bold text-orange-400 ml-1 uppercase">Start Date</label><input v-model="setup.startDate" type="date" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-xs"></div><div><label class="text-[10px] font-bold text-orange-400 ml-1 uppercase">Days</label><input v-model.number="setup.days" type="number" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-center font-bold focus:ring-0"></div></div></div><button @click="initTrip" class="w-full bg-orange-500 text-white font-black py-4 rounded-2xl shadow-lg mt-6 active:scale-95 transition uppercase tracking-widest">Start Journey!</button></div>
         </div>
     </div>
@@ -414,7 +414,12 @@ const startGeoWeather = () => {
 };
 // ===== /天氣 =====
                 const shisaLogo = ref("https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg");
-                const viewMode = ref('plan'), currentDayIdx = ref(0), showSetupModal = ref(false), tripList = ref([]), currentTripId = ref(null);
+                const viewMode = ref('plan'),
+      currentDayIdx = ref(0),
+      showSetupModal = ref(false),
+      tripList = ref([]),
+      currentTripId = ref(null),
+      isIndexLoading = ref(true);   // ✅ 新增
                 const days = ref([]), setup = ref({ destination: '沖繩 Okinawa', startDate: '2026-04-25', days: 7, rate: 0.215 }), expenses = ref([]), participantsStr = ref('我, 旅伴A'), newItemName = ref(''), packingList = ref([]), coupons = ref([]), newExpense = ref({ item: '', amount: '', payer: '', date: new Date().toISOString().split('T')[0], currency: 'JPY' });
                 const openGoogleMap = (q) => {
   const query = (q || '').trim();
@@ -560,14 +565,17 @@ const initItinerarySortable = () => {
                     startGeoWeather();
                     nextTick(() => initItinerarySortable());
                     onValue(dbRef(db, 'shisa_trip_index'), (snapshot) => {
-                        const index = snapshot.val();
-                        if (index && index.length > 0) {
-                            tripList.value = index;
-                            if (!currentTripId.value) switchTrip(tripList.value[0].id);
-                        } else {
-                            showSetupModal.value = true;
-                        }
-                    });
+  const index = snapshot.val();
+  isIndexLoading.value = false; // ✅ 一拿到回應就結束 loading
+
+  if (Array.isArray(index) && index.length > 0) {
+    tripList.value = index;
+    showSetupModal.value = false; // ✅ 明確關掉，避免閃
+    if (!currentTripId.value) switchTrip(tripList.value[0].id);
+  } else {
+    showSetupModal.value = true;
+  }
+});
                 });
 
                 watch([days, expenses, packingList, setup, coupons, participantsStr, memoText], () => saveCurrentTripData(), { deep: true });
@@ -579,7 +587,7 @@ watch(currentDayIdx, () => nextTick(() => { initItinerarySortable(); resizeAllTe
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon,
-                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather
+                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading
                 };
             }
         }).mount('#app')
