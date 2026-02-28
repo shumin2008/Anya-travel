@@ -590,17 +590,18 @@ const timePeriod = (t) => {
                 };
 
                 const saveCurrentTripData = () => {
-                    if (!currentTripId.value) return;
-                    set(dbRef(db, 'trips/' + currentTripId.value), {
-                        days: JSON.parse(JSON.stringify(days.value)),
-                        expenses: JSON.parse(JSON.stringify(expenses.value)),
-                        setup: JSON.parse(JSON.stringify(setup.value)),
-                        packingList: JSON.parse(JSON.stringify(packingList.value)),
-                        coupons: JSON.parse(JSON.stringify(coupons.value)),
-                        participantsStr: participantsStr.value,
-                        memoText: memoText.value
-                    });
-                };
+  if (!currentTripId.value) return;
+  set(dbRef(db, 'trips/' + currentTripId.value), {
+    days: JSON.parse(JSON.stringify(days.value)),
+    expenses: JSON.parse(JSON.stringify(expenses.value)),
+    setup: JSON.parse(JSON.stringify(setup.value)),
+    packingList: JSON.parse(JSON.stringify(packingList.value)),
+    coupons: JSON.parse(JSON.stringify(coupons.value)),
+    participantsStr: participantsStr.value,
+    memoText: memoText.value,
+    memoLinks: JSON.parse(JSON.stringify(memoLinks.value)) // ✅ 新增這行
+  });
+};
 
                 onMounted(() => {
                     startGeoWeather();
@@ -619,7 +620,7 @@ const timePeriod = (t) => {
 });
                 });
 
-                watch([days, expenses, packingList, setup, coupons, participantsStr, memoText], () => saveCurrentTripData(), { deep: true });
+                watch([days, expenses, packingList, setup, coupons, participantsStr, memoText, memoLinks], () => saveCurrentTripData(), { deep: true });
 watch(currentDayIdx, () => nextTick(() => { initItinerarySortable(); resizeAllTextareas(); }));
 
 
