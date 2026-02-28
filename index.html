@@ -624,8 +624,12 @@ const currentUser = ref(localStorage.getItem('shisa_current_user') || '我');
 watch(currentUser, (v) => localStorage.setItem('shisa_current_user', v || '我'));
                const timeHHMM = (t) => {
   if (!t) return '--:--';
-  // t 會是 "HH:MM"
-  return t;
+  const [hhStr, mm = '00'] = t.split(':');
+  const hh = parseInt(hhStr, 10);
+  if (Number.isNaN(hh)) return t;
+
+  const h12 = ((hh + 11) % 12) + 1; // 0->12, 13->1
+  return `${h12}:${mm}`;
 };
 
 const timePeriod = (t) => {
