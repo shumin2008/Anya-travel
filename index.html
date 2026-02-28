@@ -143,16 +143,27 @@
   <div ref="itineraryListEl" :key="currentDay.fullDate" class="space-y-6">
     <div v-for="(item, idx) in currentDay.items" :key="idx" class="handwritten-card p-4 group">
       <div class="flex gap-4 items-start">
-        <div class="time-select-area flex flex-col gap-2">
-          <input v-model="item.time" type="time"
-            class="font-black text-orange-700 bg-orange-50 rounded-lg px-1 py-0.5 text-[12px] border-none time-fixed text-center">
-          <select v-model="item.type"
-            class="text-[10px] font-black text-orange-600 bg-orange-50 border-none rounded-lg py-0.5 px-1.5 time-fixed truncate">
-            <option value="spot">📍 景點</option>
-            <option value="food">🍴 美食</option>
-            <option value="hotel">🏨 住宿</option>
-          </select>
-        </div>
+<div class="time-select-area flex flex-col gap-3 items-center">
+  <!-- 時間大方塊 -->
+  <div class="w-[92px] h-[78px] rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
+    <input
+      v-model="item.time"
+      type="time"
+      class="w-full text-center font-black text-slate-700 bg-transparent border-none p-0 focus:ring-0 font-mono text-[16px]"
+      style="text-align:center;"
+    >
+  </div>
+
+  <!-- 類型下拉 -->
+  <div class="w-[92px]">
+    <select v-model="item.type"
+      class="w-full text-[14px] font-black text-orange-700 bg-orange-50 border border-orange-100 rounded-xl py-2 pl-3 pr-7 truncate focus:ring-0">
+      <option value="spot">📍 景點</option>
+      <option value="food">🍴 美食</option>
+      <option value="hotel">🏨 住宿</option>
+    </select>
+  </div>
+</div>
 
         <div class="flex-1 min-w-0">
           <textarea v-model="item.activity" rows="2"
