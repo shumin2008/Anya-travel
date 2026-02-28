@@ -221,7 +221,14 @@
                     <div class="mt-4 bg-white/20 rounded-full h-2 relative z-10"><div class="bg-white h-full" :style="{ width: packingProgress + '%' }"></div></div>
                     <p class="mt-2 font-bold relative z-10">Progress: {{ Math.round(packingProgress) }}%</p>
                 </div>
-                <div class="handwritten-card p-4 mb-4 flex gap-2"><input v-model="newItemName" @keyup.enter="addPackItem" placeholder="需要帶什麼？" class="flex-1 bg-slate-50 border-none rounded-xl px-4 py-3"><button @click="addPackItem" class="bg-indigo-500 text-white px-4 rounded-xl shadow-md"><i class="ph-bold ph-plus"></i></button></div>
+                <div class="handwritten-card p-4 mb-4 flex gap-2 items-center">
+  <input v-model="newItemName" @keyup.enter="addPackItem" placeholder="需要帶什麼？"
+    class="flex-1 min-w-0 bg-slate-50 border-none rounded-xl px-3 py-3 truncate">
+  <button @click="addPackItem"
+    class="bg-indigo-500 text-white px-4 py-3 rounded-xl shadow-md shrink-0">
+    <i class="ph-bold ph-plus"></i>
+  </button>
+</div>
                 <div class="space-y-2"><div v-for="(item, idx) in packingList" :key="idx" class="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm transition-all" :class="item.checked ? 'opacity-50' : ''"><button @click="item.checked = !item.checked" :class="item.checked ? 'text-green-500' : 'text-slate-200'"><i class="ph-fill ph-check-circle text-2xl"></i></button><span class="flex-1 font-bold text-slate-700" :class="item.checked ? 'line-through' : ''">{{ item.name }}</span><button @click="removePackItem(idx)" class="text-slate-200 hover:text-red-400"><i class="ph-bold ph-trash text-lg"></i></button></div></div>
             </div>
 
