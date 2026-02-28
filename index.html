@@ -256,27 +256,10 @@
                 const shisaLogo = ref("https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg");
                 const viewMode = ref('plan'), currentDayIdx = ref(0), showSetupModal = ref(false), tripList = ref([]), currentTripId = ref(null);
                 const days = ref([]), setup = ref({ destination: '沖繩 Okinawa', startDate: '2026-04-25', days: 7, rate: 0.215 }), expenses = ref([]), participantsStr = ref('我, 旅伴A'), newItemName = ref(''), packingList = ref([]), coupons = ref([]), newExpense = ref({ item: '', amount: '', payer: '', date: new Date().toISOString().split('T')[0], currency: 'JPY' });
-                const openGoogleMap = async (q) => {
+                const openGoogleMap = (q) => {
   const query = (q || '').trim();
   if (!query) return;
-
-  // ✅ 先存檔，避免跳走時資料來不及寫入
-  try {
-    await saveCurrentTripData();
-  } catch (e) {
-    console.error('saveCurrentTripData failed:', e);
-  }
-
-  const url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
-
-  // ✅ 用 <a> 方式開新分頁：體感上比較不會「先空白再跳」
-  const a = document.createElement('a');
-  a.href = url;
-  a.target = '_blank';
-  a.rel = 'noopener noreferrer';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank');
 };
 
                 const memoText = ref('');
@@ -386,17 +369,17 @@ const initItinerarySortable = () => {
                 };
 
                 const saveCurrentTripData = () => {
-  if (!currentTripId.value) return Promise.resolve();
-  return set(dbRef(db, 'trips/' + currentTripId.value), {
-    days: JSON.parse(JSON.stringify(days.value)),
-    expenses: JSON.parse(JSON.stringify(expenses.value)),
-    setup: JSON.parse(JSON.stringify(setup.value)),
-    packingList: JSON.parse(JSON.stringify(packingList.value)),
-    coupons: JSON.parse(JSON.stringify(coupons.value)),
-    participantsStr: participantsStr.value,
-    memoText: memoText.value
-  });
-};
+                    if (!currentTripId.value) return;
+                    set(dbRef(db, 'trips/' + currentTripId.value), {
+                        days: JSON.parse(JSON.stringify(days.value)),
+                        expenses: JSON.parse(JSON.stringify(expenses.value)),
+                        setup: JSON.parse(JSON.stringify(setup.value)),
+                        packingList: JSON.parse(JSON.stringify(packingList.value)),
+                        coupons: JSON.parse(JSON.stringify(coupons.value)),
+                        participantsStr: participantsStr.value,
+                        memoText: memoText.value
+                    });
+                };
 
                 onMounted(() => {
                     nextTick(() => initItinerarySortable());
