@@ -499,7 +499,25 @@ const initItinerarySortable = () => {
                 const packingProgress = computed(() => packingList.value.length ? (packingList.value.filter(i=>i.checked).length/packingList.value.length)*100 : 0);
                 const paidByPerson = computed(() => { const map = {}; participants.value.forEach(p => map[p] = 0); expenses.value.forEach(e => { if(map[e.payer] !== undefined) map[e.payer] += (e.currency === 'TWD' ? (Number(e.amount) / setup.value.rate) : Number(e.amount)); }); return map; });
 
-               const addItem = () => {
+               const timeHHMM = (t) => {
+  if (!t) return '--:--';
+  // t 會是 "HH:MM"
+  return t;
+};
+
+const timePeriod = (t) => {
+  if (!t) return '';
+  const [hhStr, mmStr] = t.split(':');
+  const hh = parseInt(hhStr, 10);
+  const mm = parseInt(mmStr || '0', 10);
+
+  // 你想要「中午」特例：11:30~12:59 顯示中午（可自行調整）
+  if (hh === 12) return '中午';
+  if (hh >= 18) return '晚上';
+  if (hh >= 12) return '下午';
+  return '上午';
+};
+                const addItem = () => {
   if (!Array.isArray(currentDay.value.items)) currentDay.value.items = [];
   currentDay.value.items.push({ time: '10:00', type: 'spot', activity: '', location: '', note: '' });
   nextTick(() => resizeAllTextareas());
@@ -610,7 +628,7 @@ watch(currentDayIdx, () => nextTick(() => { initItinerarySortable(); resizeAllTe
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon,
-                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading
+                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod
                 };
             }
         }).mount('#app')
