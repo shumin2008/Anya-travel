@@ -381,6 +381,8 @@
 
         createApp({
             setup() {
+const newMemoLink = ref({ label: '', url: '' });
+const addMemoLink = () => { ... };
                 // ===== 天氣（跟著定位）=====
 const weather = ref({ temp: null, code: null, place: '' });
 const geo = ref({
@@ -643,7 +645,7 @@ watch(currentDayIdx, () => nextTick(() => { initItinerarySortable(); resizeAllTe
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon,
-                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod
+                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod, newMemoLink, addMemoLink
                 };
             }
         }).mount('#app')
