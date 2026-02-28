@@ -381,8 +381,6 @@
 
         createApp({
             setup() {
-const newMemoLink = ref({ label: '', url: '' });
-const addMemoLink = () => { ... };
                 // ===== 天氣（跟著定位）=====
 const weather = ref({ temp: null, code: null, place: '' });
 const geo = ref({
@@ -452,6 +450,32 @@ const startGeoWeather = () => {
   );
 };
 // ===== /天氣 =====
+                const newMemoLink = ref({ label: '', url: '' });
+
+const addMemoLink = () => {
+  const label = (newMemoLink.value.label || '').trim();
+  let url = (newMemoLink.value.url || '').trim();
+
+  if (!label || !url) {
+    alert('請輸入名稱與網址');
+    return;
+  }
+
+  // 沒打 https:// 就自動補
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  // 簡單驗證
+  try {
+    new URL(url);
+  } catch {
+    alert('網址格式不正確');
+    return;
+  }
+
+  memoLinks.value.unshift({ label, url });
+  newMemoLink.value.label = '';
+  newMemoLink.value.url = '';
+};
                 const shisaLogo = ref("https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg");
                 const viewMode = ref('plan'),
       currentDayIdx = ref(0),
@@ -600,7 +624,12 @@ const timePeriod = (t) => {
                             participantsStr.value = data.participantsStr || '我, 旅伴A';
                             memoText.value = data.memoText || '';
                             nextTick(() => { resizeAllTextareas(); initItinerarySortable(); });
-
+memoLinks.value = Array.isArray(data.memoLinks) && data.memoLinks.length
+  ? data.memoLinks
+  : [
+      { label: '沖繩停車場地圖', url: 'https://www.locationsmart.org/?tag=_service_parking' },
+      { label: 'Donki優惠券', url: 'https://japanportal.donki-global.com/coupon/cp001_zhtw.html' }
+    ];
                         }
                     });
                 };
