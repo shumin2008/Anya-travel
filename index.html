@@ -165,14 +165,23 @@
       <div class="flex gap-4 items-start">
         <div class="time-select-area flex flex-col gap-3 items-center">
   <!-- 時間大方塊 -->
-  <div class="w-[92px] h-[78px] rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-    <input
-      v-model="item.time"
-      type="time"
-      class="w-full text-center font-black text-slate-700 bg-transparent border-none p-0 focus:ring-0 font-mono text-[16px]"
-      style="text-align:center;"
-    >
+  <div class="w-[92px] h-[78px] rounded-2xl bg-slate-50 border border-slate-200 relative flex flex-col items-center justify-center">
+  <!-- 顯示：上午/下午/晚上 + 時間（分行） -->
+  <div class="text-[12px] font-black text-slate-400 leading-none mb-1">
+    {{ timePeriod(item.time) }}
   </div>
+  <div class="text-[28px] font-black text-slate-700 leading-none font-mono">
+    {{ timeHHMM(item.time) }}
+  </div>
+
+  <!-- 透明 time input：點擊仍可叫出時間選擇器 -->
+  <input
+    v-model="item.time"
+    type="time"
+    class="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+    aria-label="選擇時間"
+  >
+</div>
 
   <!-- 類型下拉 -->
   <div class="w-[92px]">
