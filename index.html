@@ -320,6 +320,20 @@
         <div v-if="!isIndexLoading && showSetupModal" class="absolute inset-0 ...">
             <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 text-center shadow-2xl relative"><img :src="shisaLogo" class="w-20 mx-auto mb-4 scale-110"><h2 class="text-2xl font-black text-slate-800 mb-6 uppercase tracking-tighter">開啟新旅程吧！</h2><div class="space-y-4 text-left"><div><label class="text-[10px] font-bold text-orange-400 ml-1 uppercase">Destination</label><input v-model="setup.destination" placeholder="例如: Okinawa 沖繩" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 font-bold focus:ring-0"></div><div class="grid grid-cols-2 gap-2"><div><label class="text-[10px] font-bold text-orange-400 ml-1 uppercase">Start Date</label><input v-model="setup.startDate" type="date" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-xs"></div><div><label class="text-[10px] font-bold text-orange-400 ml-1 uppercase">Days</label><input v-model.number="setup.days" type="number" class="w-full bg-slate-50 border-none rounded-2xl px-4 py-3 text-center font-bold focus:ring-0"></div></div></div><button @click="initTrip" class="w-full bg-orange-500 text-white font-black py-4 rounded-2xl shadow-lg mt-6 active:scale-95 transition uppercase tracking-widest">Start Journey!</button></div>
         </div>
+        <!-- ✅ Loading Overlay：Firebase index 還在載入時顯示 -->
+<div v-if="isIndexLoading" class="absolute inset-0 z-50 bg-orange-900/30 backdrop-blur-md flex items-center justify-center p-6">
+  <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 text-center shadow-2xl border border-orange-100">
+    <img :src="shisaLogo" class="w-16 mx-auto mb-4 opacity-90">
+    <div class="text-xl font-black text-slate-800 mb-2">載入旅程中…</div>
+    <div class="text-xs font-bold text-slate-400 mb-6">正在同步資料，請稍候</div>
+
+    <div class="flex items-center justify-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-orange-400 animate-bounce"></span>
+      <span class="w-2 h-2 rounded-full bg-orange-400 animate-bounce [animation-delay:120ms]"></span>
+      <span class="w-2 h-2 rounded-full bg-orange-400 animate-bounce [animation-delay:240ms]"></span>
+    </div>
+  </div>
+</div>
     </div>
 
     <script type="module">
