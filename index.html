@@ -269,7 +269,21 @@
                     <p class="text-xs opacity-70 mt-1 font-bold">在此貼上網址、重要代碼或隨手紀錄</p>
                 </div>
                 <div class="handwritten-card p-6 min-h-[450px] memo-paper">
+<div class="handwritten-card p-4 mb-4 bg-white/80 border border-slate-100">
+  <div class="text-[10px] font-black text-slate-500 mb-2 uppercase">新增連結</div>
 
+  <input v-model="newMemoLink.label" placeholder="名稱（例如：租車訂單）"
+    class="w-full bg-slate-50 border-none rounded-xl px-3 py-2 text-sm font-bold focus:ring-0 mb-2">
+
+  <div class="flex gap-2">
+    <input v-model="newMemoLink.url" placeholder="https://..."
+      class="flex-1 min-w-0 bg-slate-50 border-none rounded-xl px-3 py-2 text-sm font-mono focus:ring-0">
+    <button @click="addMemoLink"
+      class="shrink-0 bg-teal-600 text-white font-black px-4 py-2 rounded-xl shadow active:scale-95 transition">
+      新增
+    </button>
+  </div>
+</div>
                     <div class="grid grid-cols-1 gap-3 mb-6">
   <button
     v-for="(l, i) in memoLinks"
