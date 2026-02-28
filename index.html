@@ -259,7 +259,11 @@
                 const openGoogleMap = (q) => {
   const query = (q || '').trim();
   if (!query) return;
-  window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank');
+  const openGoogleMap = (q) => {
+  const query = (q || '').trim();
+  if (!query) return;
+  window.location.href =
+    'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
 };
 
                 const memoText = ref('');
