@@ -380,7 +380,14 @@ const initItinerarySortable = () => {
   });
 };
 
-                const toggleFlightCard = () => currentDay.value.flight = { startTime: '11:16', number: '', endTime: '14:00' };
+                const toggleFlightCard = () => currentDay.value.flight = {
+  startTime: '11:16',
+  startAirport: '',
+  number: '',
+  endTime: '14:00',
+  arrivalOffset: '0',
+  endAirport: ''
+};
                 const addPackItem = () => { if(newItemName.value.trim()){ packingList.value.unshift({name: newItemName.value, checked: false}); newItemName.value = ''; } };
                 const removePackItem = (idx) => packingList.value.splice(idx, 1);
                 const addExpense = () => { if(newExpense.value.item && newExpense.value.amount && newExpense.value.payer){ expenses.value.unshift({...newExpense.value}); newExpense.value.item = ''; newExpense.value.amount = ''; } };
