@@ -384,6 +384,16 @@
 </div>
     </div>
 
+    // 註冊 Service Worker
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('Shisa Service Worker Registered!'))
+        .catch((err) => console.log('SW Registration Failed', err));
+    });
+  }
+</script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref as dbRef, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
