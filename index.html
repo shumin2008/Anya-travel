@@ -311,15 +311,28 @@
   </div>
 </div>
                     <div class="grid grid-cols-1 gap-3 mb-6">
-  <button
-    v-for="(l, i) in memoLinks"
-    :key="i"
-    @click="openLink(l.url)"
-    class="handwritten-card px-4 py-3 flex items-start justify-start gap-2 font-black text-teal-700 bg-white hover:bg-teal-50 active:scale-95 transition"
-  >
-    <i class="ph-bold ph-link-simple text-lg"></i>
-    <span class="whitespace-normal break-words text-left leading-snug">{{ l.label }}</span>
-  </button>
+  <div class="grid grid-cols-1 gap-3 mb-6">
+  <div v-for="(l, i) in memoLinks" :key="i"
+       class="handwritten-card px-4 py-3 flex items-start gap-2 font-black text-teal-700 bg-white">
+
+    <!-- 左側：開連結 -->
+    <button @click="openLink(l.url)"
+            class="flex-1 min-w-0 flex items-start gap-2 text-left hover:text-teal-800">
+      <i class="ph-bold ph-link-simple text-lg shrink-0"></i>
+      <span class="whitespace-normal break-words leading-snug">
+        {{ l.label }}
+      </span>
+    </button>
+
+    <!-- 右側：刪除 -->
+    <button @click="removeMemoLink(i)"
+            class="shrink-0 w-10 h-10 rounded-2xl bg-rose-50 text-rose-300 hover:bg-rose-100 hover:text-rose-500 flex items-center justify-center"
+            title="刪除連結">
+      <i class="ph-bold ph-trash text-xl"></i>
+    </button>
+
+  </div>
+</div>
 </div>
                     <textarea v-model="memoText" class="memo-textarea" placeholder="例如：&#10;1. 租車預約單 https://...&#10;2. 潛水預約代碼: ABC123&#10;3. 伴手禮購物清單..."></textarea>
                 </div>
@@ -515,7 +528,10 @@ const addMemoLink = () => {
   newMemoLink.value.url = '';
 };
                 let saveTimer = null;
-
+const removeMemoLink = (idx) => {
+  if (!confirm('刪除這個連結？')) return;
+  memoLinks.value.splice(idx, 1);
+};
 const scheduleSave = () => {
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
@@ -806,7 +822,7 @@ watch(viewMode, (m) => {
                     shisaLogo, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addDay, toggleFlightCard, 
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
-                    participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon,
+                    participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon, removeMemoLink, 
                     memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod, newMemoLink, addMemoLink, currentUser, togglePackCheck
                 };
             }
