@@ -6,7 +6,7 @@
     <title>2026OKINAWA</title>
 <link rel="apple-touch-icon" href="https://cdn.phototourl.com/uploads/2026-02-27-dbb392e6-6884-4b06-980b-2719bb6c5aa5.png">
 <link rel="icon" type="image/png" href="https://cdn.phototourl.com/uploads/2026-02-27-dbb392e6-6884-4b06-980b-2719bb6c5aa5.png">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="/manifest.json">
     
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -337,7 +337,7 @@
     </button>
   </div>
 </div>
-                    <div class="grid grid-cols-1 gap-3 mb-6">
+                    
   <div class="grid grid-cols-1 gap-3 mb-6">
   <div v-for="(l, i) in memoLinks" :key="i"
        class="handwritten-card px-4 py-3 flex items-start gap-2 font-black text-teal-700 bg-white">
@@ -359,8 +359,7 @@
     </button>
 
   </div>
-</div>
-</div>
+  </div>
                     <textarea v-model="memoText" class="memo-textarea" placeholder="例如：&#10;1. 租車預約單 https://...&#10;2. 潛水預約代碼: ABC123&#10;3. 伴手禮購物清單..."></textarea>
                 </div>
             </div>
@@ -425,7 +424,7 @@
 </div>
     </div>
 
-    // 註冊 Service Worker
+    <!-- 註冊 Service Worker -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
