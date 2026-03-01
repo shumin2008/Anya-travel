@@ -315,11 +315,19 @@
                     <i class="ph-fill ph-note absolute -right-4 -bottom-4 text-9xl opacity-10"></i>
                     <h2 class="text-2xl font-black relative z-10">旅程備忘錄</h2>
                     <p class="text-xs opacity-70 mt-1 font-bold">在此貼上網址、重要代碼或隨手紀錄</p>
-                    <button @click="exportJSON"
-  class="absolute top-4 right-4 z-20 bg-white/20 hover:bg-white/30 text-white font-black text-xs px-3 py-2 rounded-xl shadow active:scale-95 transition flex items-center gap-1">
-  <i class="ph-bold ph-download-simple text-base"></i>
-  匯出
-</button>
+                    <div class="absolute top-4 right-4 z-20 flex flex-col gap-2">
+  <button @click="exportJSON"
+    class="bg-white/20 hover:bg-white/30 text-white font-black text-xs px-3 py-2 rounded-xl shadow active:scale-95 transition flex items-center gap-1">
+    <i class="ph-bold ph-download-simple text-base"></i>
+    匯出JSON
+  </button>
+
+  <button @click="exportTripReportPDF"
+    class="bg-white/20 hover:bg-white/30 text-white font-black text-xs px-3 py-2 rounded-xl shadow active:scale-95 transition flex items-center gap-1">
+    <i class="ph-bold ph-printer text-base"></i>
+    匯出PDF
+  </button>
+</div>
                 </div>
                 <div class="handwritten-card p-6 min-h-[450px] memo-paper">
 <div class="handwritten-card p-4 mb-4 bg-white/80 border border-slate-100">
@@ -930,6 +938,133 @@ const buildExportObject = () => {
   };
 };
 
+const escapeHTML = (s) => String(s ?? '')
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#039;');
+
+const exportTripReportPDF = () => {
+  const tripName = setup.value?.destination || '旅程回顧';
+  const rate = Number(setup.value?.rate || 0);
+
+  const totalJPY = (expenses.value || []).reduce((sum, e) => {
+    const amt = Number(e.amount || 0);
+    if (e.currency === 'TWD' && rate) return sum + (amt / rate);
+    return sum + amt;
+  }, 0);
+
+  const htmlDays = (days.value || []).slice(0, 7).map((d, idx) => {
+    const title = escapeHTML(d.title || '');
+    const header = `${escapeHTML(d.date || '')} / D${idx + 1}${title ? ' — ' + title : ''}`;
+
+    const items = (d.items || []).map((it) => {
+      const t = escapeHTML(it.time || '');
+      const type = it.type === 'food' ? '🍴' : it.type === 'hotel' ? '🏨' : '📍';
+      const act = escapeHTML(it.activity || '');
+      const loc = escapeHTML(it.location || '');
+      const note = escapeHTML(it.note || '');
+      return `
+        <div class="item">
+          <div class="row">
+            <div class="time">${t}</div>
+            <div class="main">
+              <div class="act">${type} ${act}</div>
+              ${loc ? `<div class="sub">📌 ${loc}</div>` : ``}
+              ${note ? `<div class="note">📝 ${note}</div>` : ``}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <section class="day">
+        <h2>${header}</h2>
+        ${items || `<div class="muted">（當天尚無行程）</div>`}
+      </section>
+    `;
+  }).join('');
+
+  const links = (memoLinks.value || []).map(l => {
+    const label = escapeHTML(l.label || '');
+    const url = escapeHTML(l.url || '');
+    return `<li><a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a><div class="muted">${url}</div></li>`;
+  }).join('');
+
+  const expensesHtml = (expenses.value || []).map(e => {
+    const date = escapeHTML(e.date || '');
+    const item = escapeHTML(e.item || '');
+    const payer = escapeHTML(e.payer || '');
+    const cur = e.currency === 'TWD' ? 'NT$' : '¥';
+    const amt = Number(e.amount || 0).toLocaleString();
+    return `<tr><td>${date}</td><td>${item}</td><td>${payer}</td><td class="num">${cur}${amt}</td></tr>`;
+  }).join('');
+
+  const memo = escapeHTML(memoText.value || '').replaceAll('\n', '<br>');
+
+  const doc = `
+<!doctype html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHTML(tripName)}｜旅程回顧</title>
+<style>
+  body{font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif; padding:24px; color:#2d2a26;}
+  h1{margin:0 0 8px; font-size:22px;}
+  .meta{color:#6b7280; font-size:12px; margin-bottom:16px;}
+  h2{margin:20px 0 10px; font-size:16px; border-left:4px solid #FFB74D; padding-left:10px;}
+  .day{page-break-inside:avoid;}
+  .row{display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px solid #eee;}
+  .time{width:72px; font-weight:700; color:#374151;}
+  .act{font-weight:800;}
+  .sub{margin-top:4px; color:#6b7280; font-size:12px;}
+  .note{margin-top:4px; background:#fff7ed; padding:6px 8px; border-radius:8px; font-size:12px; color:#9a3412;}
+  .muted{color:#9ca3af; font-size:12px;}
+  table{width:100%; border-collapse:collapse; margin-top:8px;}
+  th,td{border-bottom:1px solid #eee; padding:8px; font-size:12px; text-align:left;}
+  th{color:#6b7280;}
+  .num{text-align:right; font-variant-numeric:tabular-nums;}
+  a{color:#0f766e; text-decoration:none;}
+  @media print {
+    body{padding:0}
+    a{color:#000}
+  }
+</style>
+</head>
+<body>
+  <h1>${escapeHTML(tripName)}｜旅程回顧</h1>
+  <div class="meta">匯出時間：${new Date().toLocaleString()}　｜　支出合計：約 ¥${Math.round(totalJPY).toLocaleString()}</div>
+
+  <h2>行程</h2>
+  ${htmlDays}
+
+  <h2>備忘錄</h2>
+  ${memo ? `<div>${memo}</div>` : `<div class="muted">（無）</div>`}
+
+  <h2>常用連結</h2>
+  ${links ? `<ol>${links}</ol>` : `<div class="muted">（無）</div>`}
+
+  <h2>支出明細</h2>
+  ${expensesHtml ? `<table><thead><tr><th>日期</th><th>項目</th><th>付款人</th><th class="num">金額</th></tr></thead><tbody>${expensesHtml}</tbody></table>` : `<div class="muted">（無）</div>`}
+
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => window.print(), 250);
+    });
+  </script>
+</body>
+</html>`;
+
+  const w = window.open('', '_blank');
+if (!w) { alert('瀏覽器阻擋彈出視窗，請允許後再試'); return; }
+w.document.open();
+w.document.write(doc);
+w.document.close();
+};               
+
 const exportJSON = () => {
   const data = buildExportObject();
   const json = JSON.stringify(data, null, 2);
@@ -964,7 +1099,7 @@ const exportJSON = () => {
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon, removeMemoLink, 
-                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod, newMemoLink, addMemoLink, currentUser, togglePackCheck, syncStatus, lastSyncedAt, lastSyncError, isHydrating, exportJSON,
+                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod, newMemoLink, addMemoLink, currentUser, togglePackCheck, syncStatus, lastSyncedAt, lastSyncError, isHydrating, exportJSON, exportTripReportPDF,
                 };
             }
         }).mount('#app')
