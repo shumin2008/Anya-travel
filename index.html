@@ -58,19 +58,38 @@
                         </div>
                         <div class="overflow-hidden flex-1">
                             <input v-model="setup.destination" class="title-input" placeholder="旅程名稱" @change="syncTripName">
-                            <p class="text-[10px] font-bold opacity-60 uppercase truncate">Happy Trip with Shisa!</p>
+                            <p class="text-[10px] font-bold opacity-60 uppercase truncate">Happy Trip!</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-1 bg-white/30 p-1 rounded-xl shrink-0 ml-2">
-                    <button @click="viewMode = 'plan'" :class="viewMode === 'plan' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-calendar-check text-lg"></i></button>
-                    <button @click="viewMode = 'pack'" :class="viewMode === 'pack' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-suitcase-rolling text-lg"></i></button>
-                    <button @click="viewMode = 'memo'" :class="viewMode === 'memo' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-note-pencil text-lg"></i></button>
-                    <button @click="viewMode = 'coupons'" :class="viewMode === 'coupons' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-ticket text-lg"></i></button>
-                    <button @click="viewMode = 'money'" :class="viewMode === 'money' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-currency-dollar text-lg"></i></button>
-                </div>
-            </div>
+                <!-- ✅ 右側：工具列 + 同步狀態 -->
+<div class="flex items-center gap-2 shrink-0 ml-2">
+  <!-- 工具列 icon -->
+  <div class="flex items-center gap-1 bg-white/30 p-1 rounded-xl">
+    <button @click="viewMode = 'plan'" :class="viewMode === 'plan' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-calendar-check text-lg"></i></button>
+    <button @click="viewMode = 'pack'" :class="viewMode === 'pack' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-suitcase-rolling text-lg"></i></button>
+    <button @click="viewMode = 'memo'" :class="viewMode === 'memo' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-note-pencil text-lg"></i></button>
+    <button @click="viewMode = 'coupons'" :class="viewMode === 'coupons' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-ticket text-lg"></i></button>
+    <button @click="viewMode = 'money'" :class="viewMode === 'money' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-currency-dollar text-lg"></i></button>
+  </div>
+
+  <!-- 同步狀態文字 -->
+  <div class="text-[10px] font-black leading-tight text-right text-orange-900/60 w-[64px]">
+    <div v-if="syncStatus === 'saving'">同步中…</div>
+
+    <div v-else-if="syncStatus === 'saved'">
+      已同步<br>
+      {{ lastSyncedAt ? new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '' }}
+    </div>
+
+    <div v-else-if="syncStatus === 'error'" class="text-red-600">
+      同步失敗
+    </div>
+
+    <div v-else class="opacity-50">&nbsp;</div>
+  </div>
+</div>
             
             <div v-if="viewMode === 'plan'" class="flex overflow-x-auto hide-scroll px-3 pb-3 space-x-3 snap-x">
                 <div v-for="(day, index) in days" :key="index" @click="currentDayIdx = index" 
@@ -538,6 +557,9 @@ const scheduleSave = () => {
     saveCurrentTripData();
   }, 800); // 0.8 秒，可調 500~1500
 };
+                const syncStatus = ref('idle'); // idle | saving | saved | error
+const lastSyncedAt = ref(null);
+const lastSyncError = ref('');
                 const shisaLogo = ref("https://cdn.phototourl.com/uploads/2026-02-27-c58164d7-98bb-4a27-aad2-0d7b756f4be4.jpg");
                 const viewMode = ref('plan'),
       currentDayIdx = ref(0),
@@ -780,6 +802,35 @@ const addItem = () => {
                 const saveCurrentTripData = async () => {
   if (!currentTripId.value) return;
 
+  syncStatus.value = 'saving';
+  lastSyncError.value = '';
+
+  try {
+    const base = 'trips/' + currentTripId.value;
+
+    const payload = {
+      [base + '/days']: JSON.parse(JSON.stringify(days.value)),
+      [base + '/expenses']: JSON.parse(JSON.stringify(expenses.value)),
+      [base + '/setup']: JSON.parse(JSON.stringify(setup.value)),
+      [base + '/packingList']: JSON.parse(JSON.stringify(packingList.value)),
+      [base + '/coupons']: JSON.parse(JSON.stringify(coupons.value)),
+      [base + '/participantsStr']: participantsStr.value,
+      [base + '/memoText']: memoText.value,
+      [base + '/memoLinks']: JSON.parse(JSON.stringify(memoLinks.value)),
+      [base + '/_meta/updatedAt']: Date.now()
+    };
+
+    await update(dbRef(db), payload);
+
+    syncStatus.value = 'saved';
+    lastSyncedAt.value = Date.now();
+  } catch (e) {
+    console.error(e);
+    syncStatus.value = 'error';
+    lastSyncError.value = e?.message || 'sync failed';
+  }
+};
+
   const base = 'trips/' + currentTripId.value;
 
   const payload = {
@@ -848,7 +899,7 @@ watch(viewMode, (m) => {
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon, removeMemoLink, 
-                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod, newMemoLink, addMemoLink, currentUser, togglePackCheck
+                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod, newMemoLink, addMemoLink, currentUser, togglePackCheck, syncStatus, lastSyncedAt, lastSyncError
                 };
             }
         }).mount('#app')
