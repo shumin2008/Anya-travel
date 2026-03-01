@@ -163,7 +163,7 @@
 </div>
 <div class="relative pl-4 border-l-2 border-orange-200 space-y-6">
   <div ref="itineraryListEl" :key="currentDay.fullDate" class="space-y-6">
-    <div v-for="(item, idx) in currentDay.items" :key="idx" class="handwritten-card p-4 group">
+    <div v-for="(item, idx) in currentDay.items" :key="item.id" class="handwritten-card p-4 group">
       <div class="flex gap-4 items-start">
         <div class="time-select-area flex flex-col gap-3 items-center">
   <!-- 時間大方塊 -->
@@ -660,9 +660,18 @@ const timePeriod = (t) => {
   if (hh >= 12) return '下午';
   return '上午';
 };
-                const addItem = () => {
+                const makeItineraryItem = () => ({
+  id: 'it_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6),
+  time: '10:00',
+  type: 'spot',
+  activity: '',
+  location: '',
+  note: ''
+});
+
+const addItem = () => {
   if (!Array.isArray(currentDay.value.items)) currentDay.value.items = [];
-  currentDay.value.items.push({ time: '10:00', type: 'spot', activity: '', location: '', note: '' });
+  currentDay.value.items.push(makeItineraryItem());
   nextTick(() => resizeAllTextareas());
 };
 
@@ -732,18 +741,28 @@ const timePeriod = (t) => {
                     currentTripId.value = newId; days.value = newDays; expenses.value = []; packingList.value = []; coupons.value = []; memoText.value = ''; showSetupModal.value = false;
                 };
 
+                const ensureItineraryItemIds = () => {
+  (days.value || []).forEach((d) => {
+    if (!d || !Array.isArray(d.items)) return;
+    d.items.forEach((it) => {
+      if (!it.id) it.id = 'it_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
+    });
+  });
+};
                 const switchTrip = (id) => {
                     currentTripId.value = id;
                     onValue(dbRef(db, 'trips/' + id), (snapshot) => {
                         const data = snapshot.val();
                         if (data) {
   days.value = (data.days || []).slice(0, 7);
+  ensureItineraryItemIds();
   expenses.value = data.expenses || [];
   setup.value = data.setup || {};
   packingList.value = (data.packingList || []).map(ensurePackingItemSchema).filter(Boolean);
   coupons.value = data.coupons || [];
   participantsStr.value = data.participantsStr || '我, 旅伴A';
   memoText.value = data.memoText || '';
+                            
 
   memoLinks.value = Array.isArray(data.memoLinks) && data.memoLinks.length
     ? data.memoLinks
