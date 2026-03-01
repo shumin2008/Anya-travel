@@ -315,6 +315,11 @@
                     <i class="ph-fill ph-note absolute -right-4 -bottom-4 text-9xl opacity-10"></i>
                     <h2 class="text-2xl font-black relative z-10">旅程備忘錄</h2>
                     <p class="text-xs opacity-70 mt-1 font-bold">在此貼上網址、重要代碼或隨手紀錄</p>
+                    <button @click="exportJSON"
+  class="absolute top-4 right-4 z-20 bg-white/20 hover:bg-white/30 text-white font-black text-xs px-3 py-2 rounded-xl shadow active:scale-95 transition flex items-center gap-1">
+  <i class="ph-bold ph-download-simple text-base"></i>
+  匯出
+</button>
                 </div>
                 <div class="handwritten-card p-6 min-h-[450px] memo-paper">
 <div class="handwritten-card p-4 mb-4 bg-white/80 border border-slate-100">
@@ -909,13 +914,57 @@ watch(currentDayIdx, () => nextTick(() => { initItinerarySortable(); resizeAllTe
 watch(viewMode, (m) => {
   if (m === 'plan') nextTick(() => initItinerarySortable());
 });
+const buildExportObject = () => {
+  return {
+    exportedAt: Date.now(),
+    app: '2026OKINAWA',
+    tripId: currentTripId.value || null,
+    setup: JSON.parse(JSON.stringify(setup.value)),
+    days: JSON.parse(JSON.stringify(days.value)),
+    expenses: JSON.parse(JSON.stringify(expenses.value)),
+    packingList: JSON.parse(JSON.stringify(packingList.value)),
+    coupons: JSON.parse(JSON.stringify(coupons.value)),
+    participantsStr: participantsStr.value,
+    memoText: memoText.value,
+    memoLinks: JSON.parse(JSON.stringify(memoLinks.value))
+  };
+};
 
+const exportJSON = () => {
+  const data = buildExportObject();
+  const json = JSON.stringify(data, null, 2);
+
+  const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+
+  const safeName = (setup.value?.destination || 'trip')
+    .replace(/[\\/:*?"<>|]/g, '_')
+    .trim();
+
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+
+  const filename = `${safeName}_${y}${m}${dd}_${hh}${mm}.json`;
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
                 return { 
                     shisaLogo, viewMode, currentDayIdx, days, currentDay, addItem, removeItem, addDay, toggleFlightCard, 
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon, removeMemoLink, 
-                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod, newMemoLink, addMemoLink, currentUser, togglePackCheck, syncStatus, lastSyncedAt, lastSyncError, isHydrating,
+                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod, newMemoLink, addMemoLink, currentUser, togglePackCheck, syncStatus, lastSyncedAt, lastSyncError, isHydrating, exportJSON,
                 };
             }
         }).mount('#app')
