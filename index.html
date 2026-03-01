@@ -412,7 +412,7 @@
     <script type="module">
         import Sortable from "https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/modular/sortable.esm.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref as dbRef, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref as dbRef, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBjeYJPSMXhoprXnSVIWLW8Tx65-CjhEFs",
@@ -777,18 +777,24 @@ const addItem = () => {
                     });
                 };
 
-                const saveCurrentTripData = () => {
+                const saveCurrentTripData = async () => {
   if (!currentTripId.value) return;
-  set(dbRef(db, 'trips/' + currentTripId.value), {
-    days: JSON.parse(JSON.stringify(days.value)),
-    expenses: JSON.parse(JSON.stringify(expenses.value)),
-    setup: JSON.parse(JSON.stringify(setup.value)),
-    packingList: JSON.parse(JSON.stringify(packingList.value)),
-    coupons: JSON.parse(JSON.stringify(coupons.value)),
-    participantsStr: participantsStr.value,
-    memoText: memoText.value,
-    memoLinks: JSON.parse(JSON.stringify(memoLinks.value)) // ✅ 新增這行
-  });
+
+  const base = 'trips/' + currentTripId.value;
+
+  const payload = {
+    [base + '/days']: JSON.parse(JSON.stringify(days.value)),
+    [base + '/expenses']: JSON.parse(JSON.stringify(expenses.value)),
+    [base + '/setup']: JSON.parse(JSON.stringify(setup.value)),
+    [base + '/packingList']: JSON.parse(JSON.stringify(packingList.value)),
+    [base + '/coupons']: JSON.parse(JSON.stringify(coupons.value)),
+    [base + '/participantsStr']: participantsStr.value,
+    [base + '/memoText']: memoText.value,
+    [base + '/memoLinks']: JSON.parse(JSON.stringify(memoLinks.value)),
+    [base + '/_meta/updatedAt']: Date.now()
+  };
+
+  await update(dbRef(db), payload);
 };
 
                 onMounted(() => {
