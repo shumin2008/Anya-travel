@@ -49,58 +49,61 @@
 
     <div id="app" class="flex flex-col h-full max-w-md mx-auto w-full bg-[#fdfaf5] shadow-2xl relative sm:rounded-3xl sm:my-4 sm:h-[95vh] border-x border-orange-100">
 
+        
         <header class="bg-[#FFB74D] text-[#5D4037] shrink-0 z-20 shadow-md">
-            <div class="p-4 flex justify-between items-center">
-                <div class="flex items-center gap-3 flex-1 overflow-hidden">
-                    <div class="flex items-center gap-2 overflow-hidden flex-1">
-                        <div class="w-12 h-12 rounded-full bg-white border-2 border-orange-400 p-0.5 shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center">
-                            <img :src="shisaLogo" alt="獅薩" class="w-full h-full object-contain">
-                        </div>
-                        <div class="overflow-hidden flex-1">
-                            <input v-model="setup.destination" class="title-input" placeholder="旅程名稱" @change="syncTripName">
-                            <p class="text-[10px] font-bold opacity-60 uppercase truncate">Happy Trip!</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- ✅ 右側：工具列 + 同步狀態 -->
-<div class="flex items-center gap-2 shrink-0 ml-2">
-  <!-- 工具列 icon -->
-  <div class="flex items-center gap-1 bg-white/30 p-1 rounded-xl">
-    <button @click="viewMode = 'plan'" :class="viewMode === 'plan' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-calendar-check text-lg"></i></button>
-    <button @click="viewMode = 'pack'" :class="viewMode === 'pack' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-suitcase-rolling text-lg"></i></button>
-    <button @click="viewMode = 'memo'" :class="viewMode === 'memo' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-note-pencil text-lg"></i></button>
-    <button @click="viewMode = 'coupons'" :class="viewMode === 'coupons' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-ticket text-lg"></i></button>
-    <button @click="viewMode = 'money'" :class="viewMode === 'money' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-currency-dollar text-lg"></i></button>
-  </div>
+  <div class="p-4 flex justify-between items-center">
+    <div class="flex items-center gap-3 flex-1 overflow-hidden">
+      <div class="flex items-center gap-2 overflow-hidden flex-1">
+        <div class="w-12 h-12 rounded-full bg-white border-2 border-orange-400 p-0.5 shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center">
+          <img :src="shisaLogo" alt="獅薩" class="w-full h-full object-contain">
+        </div>
+        <div class="overflow-hidden flex-1">
+  <input v-model="setup.destination" class="title-input" placeholder="旅程名稱" @change="syncTripName">
 
-  <!-- 同步狀態文字 -->
-  <div class="text-[10px] font-black leading-tight text-right text-orange-900/60 w-[64px]">
-    <div v-if="syncStatus === 'saving'">同步中…</div>
+  <div class="text-[10px] font-bold leading-tight opacity-60 truncate">
+    <span v-if="syncStatus === 'saving'">同步中…</span>
 
-    <div v-else-if="syncStatus === 'saved'">
-      已同步<br>
-      {{ lastSyncedAt ? new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '' }}
-    </div>
+    <span v-else-if="syncStatus === 'saved'">
+      已同步
+      <span class="ml-1">
+        {{ lastSyncedAt ? new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '' }}
+      </span>
+    </span>
 
-    <div v-else-if="syncStatus === 'error'" class="text-red-600">
+    <span v-else-if="syncStatus === 'error'" class="text-red-600 opacity-100">
       同步失敗
-    </div>
+    </span>
 
-    <div v-else class="opacity-50">&nbsp;</div>
+    <span v-else>&nbsp;</span>
   </div>
 </div>
-            
-            <div v-if="viewMode === 'plan'" class="flex overflow-x-auto hide-scroll px-3 pb-3 space-x-3 snap-x">
-                <div v-for="(day, index) in days" :key="index" @click="currentDayIdx = index" 
-                     class="snap-center shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-2xl cursor-pointer border-2 transition-all" 
-                     :class="currentDayIdx === index ? 'bg-white text-[#E65100] border-white shadow-lg scale-105' : 'bg-white/30 text-orange-900/40 border-transparent'">
-                    <span class="text-[11px] font-bold">{{ day.shortDate }}</span>
-                    <span class="text-lg font-black">D{{ index + 1 }}</span>
-                </div>
-                <button v-if="days.length < 7" @click="addDay" class="shrink-0 w-10 h-16 rounded-2xl flex items-center justify-center border-2 border-dashed border-white/40 text-white/50"><i class="ph-bold ph-plus"></i></button>
-            </div>
-        </header>
+</div>
+</div>
+      <!-- ✅ 右側：工具列 + 同步狀態 -->
+    <div class="flex items-center gap-2 shrink-0 ml-2">
+      <!-- 工具列 icon -->
+      <div class="flex items-center gap-1 bg-white/30 p-1 rounded-xl">
+        <button @click="viewMode = 'plan'" :class="viewMode === 'plan' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-calendar-check text-lg"></i></button>
+        <button @click="viewMode = 'pack'" :class="viewMode === 'pack' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-suitcase-rolling text-lg"></i></button>
+        <button @click="viewMode = 'memo'" :class="viewMode === 'memo' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-note-pencil text-lg"></i></button>
+        <button @click="viewMode = 'coupons'" :class="viewMode === 'coupons' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-ticket text-lg"></i></button>
+        <button @click="viewMode = 'money'" :class="viewMode === 'money' ? 'bg-white text-orange-700' : 'text-orange-900/50'" class="p-2 rounded-lg transition-all"><i class="ph-bold ph-currency-dollar text-lg"></i></button>
+      </div>
+
+    
+    </div>
+  </div> <!-- ✅ 這行很重要：關掉 p-4 flex justify-between -->
+
+  <div v-if="viewMode === 'plan'" class="flex overflow-x-auto hide-scroll px-3 pb-3 space-x-3 snap-x">
+    <div v-for="(day, index) in days" :key="index" @click="currentDayIdx = index"
+         class="snap-center shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-2xl cursor-pointer border-2 transition-all"
+         :class="currentDayIdx === index ? 'bg-white text-[#E65100] border-white shadow-lg scale-105' : 'bg-white/30 text-orange-900/40 border-transparent'">
+      <span class="text-[11px] font-bold">{{ day.shortDate }}</span>
+      <span class="text-lg font-black">D{{ index + 1 }}</span>
+    </div>
+    <button v-if="days.length < 7" @click="addDay" class="shrink-0 w-10 h-16 rounded-2xl flex items-center justify-center border-2 border-dashed border-white/40 text-white/50"><i class="ph-bold ph-plus"></i></button>
+  </div>
+</header>
 
         <main class="flex-1 overflow-y-auto relative hide-scroll bg-[#fdfaf5]">
             <div v-if="viewMode === 'plan'" class="p-4 pb-24">
@@ -546,16 +549,24 @@ const addMemoLink = () => {
   newMemoLink.value.label = '';
   newMemoLink.value.url = '';
 };
-                let saveTimer = null;
+                
 const removeMemoLink = (idx) => {
   if (!confirm('刪除這個連結？')) return;
   memoLinks.value.splice(idx, 1);
 };
+let saveTimer = null;
+let savingPromise = null;   // 防止同時多次寫入
+let pendingSave = false;    // 寫入中又被觸發，結束後補一次
+
 const scheduleSave = () => {
   if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    saveCurrentTripData();
-  }, 800); // 0.8 秒，可調 500~1500
+
+  // 一有變更就先顯示同步中
+  syncStatus.value = 'saving';
+
+  saveTimer = setTimeout(async () => {
+    await saveCurrentTripData();
+  }, 800);
 };
                 const syncStatus = ref('idle'); // idle | saving | saved | error
 const lastSyncedAt = ref(null);
@@ -567,6 +578,7 @@ const lastSyncError = ref('');
       tripList = ref([]),
       currentTripId = ref(null),
       isIndexLoading = ref(true);   // ✅ 新增
+                const isHydrating = ref(false);
                 const days = ref([]), setup = ref({ destination: '沖繩 Okinawa', startDate: '2026-04-25', days: 7, rate: 0.215 }), expenses = ref([]), participantsStr = ref('我, 旅伴A'), newItemName = ref(''), packingList = ref([]), coupons = ref([]), newExpense = ref({ item: '', amount: '', payer: '', date: new Date().toISOString().split('T')[0], currency: 'JPY' });
                 const openGoogleMap = (q) => {
   const query = (q || '').trim();
@@ -771,11 +783,59 @@ const addItem = () => {
     });
   });
 };
+                const saveCurrentTripData = async () => {
+  if (!currentTripId.value) return;
+
+  // 若正在寫入，先記著：寫完再補一次
+  if (savingPromise) {
+    pendingSave = true;
+    return savingPromise;
+  }
+
+  syncStatus.value = 'saving';
+  lastSyncError.value = '';
+
+  const base = `trips/${currentTripId.value}`;
+  const payload = {
+    [`${base}/days`]: JSON.parse(JSON.stringify(days.value)),
+    [`${base}/expenses`]: JSON.parse(JSON.stringify(expenses.value)),
+    [`${base}/setup`]: JSON.parse(JSON.stringify(setup.value)),
+    [`${base}/packingList`]: JSON.parse(JSON.stringify(packingList.value)),
+    [`${base}/coupons`]: JSON.parse(JSON.stringify(coupons.value)),
+    [`${base}/participantsStr`]: participantsStr.value,
+    [`${base}/memoText`]: memoText.value,
+    [`${base}/memoLinks`]: JSON.parse(JSON.stringify(memoLinks.value)),
+    [`${base}/_meta/updatedAt`]: Date.now()
+  };
+
+  savingPromise = (async () => {
+    try {
+      await update(dbRef(db), payload);
+      syncStatus.value = 'saved';
+      lastSyncedAt.value = Date.now();
+    } catch (e) {
+      console.error('sync failed:', e);
+      syncStatus.value = 'error';
+      lastSyncError.value = e?.message || 'sync failed';
+    } finally {
+      savingPromise = null;
+
+      // 寫入期間又被觸發過 → 補寫一次，確保最後狀態有存到
+      if (pendingSave) {
+        pendingSave = false;
+        return saveCurrentTripData();
+      }
+    }
+  })();
+
+  return savingPromise;
+};
                 const switchTrip = (id) => {
                     currentTripId.value = id;
                     onValue(dbRef(db, 'trips/' + id), (snapshot) => {
                         const data = snapshot.val();
                         if (data) {
+  isHydrating.value = true;   // ✅ 加這行（在塞資料前）
   days.value = (data.days || []).slice(0, 7);
   ensureItineraryItemIds();
   expenses.value = data.expenses || [];
@@ -793,60 +853,13 @@ const addItem = () => {
         { label: 'Donki優惠券', url: 'https://japanportal.donki-global.com/coupon/cp001_zhtw.html' }
       ];
 
-  nextTick(() => { resizeAllTextareas(); initItinerarySortable(); });
+  nextTick(() => { resizeAllTextareas(); initItinerarySortable(); isHydrating.value = false; });
 }
                     
                     });
                 };
 
-                const saveCurrentTripData = async () => {
-  if (!currentTripId.value) return;
 
-  syncStatus.value = 'saving';
-  lastSyncError.value = '';
-
-  try {
-    const base = 'trips/' + currentTripId.value;
-
-    const payload = {
-      [base + '/days']: JSON.parse(JSON.stringify(days.value)),
-      [base + '/expenses']: JSON.parse(JSON.stringify(expenses.value)),
-      [base + '/setup']: JSON.parse(JSON.stringify(setup.value)),
-      [base + '/packingList']: JSON.parse(JSON.stringify(packingList.value)),
-      [base + '/coupons']: JSON.parse(JSON.stringify(coupons.value)),
-      [base + '/participantsStr']: participantsStr.value,
-      [base + '/memoText']: memoText.value,
-      [base + '/memoLinks']: JSON.parse(JSON.stringify(memoLinks.value)),
-      [base + '/_meta/updatedAt']: Date.now()
-    };
-
-    await update(dbRef(db), payload);
-
-    syncStatus.value = 'saved';
-    lastSyncedAt.value = Date.now();
-  } catch (e) {
-    console.error(e);
-    syncStatus.value = 'error';
-    lastSyncError.value = e?.message || 'sync failed';
-  }
-};
-
-  const base = 'trips/' + currentTripId.value;
-
-  const payload = {
-    [base + '/days']: JSON.parse(JSON.stringify(days.value)),
-    [base + '/expenses']: JSON.parse(JSON.stringify(expenses.value)),
-    [base + '/setup']: JSON.parse(JSON.stringify(setup.value)),
-    [base + '/packingList']: JSON.parse(JSON.stringify(packingList.value)),
-    [base + '/coupons']: JSON.parse(JSON.stringify(coupons.value)),
-    [base + '/participantsStr']: participantsStr.value,
-    [base + '/memoText']: memoText.value,
-    [base + '/memoLinks']: JSON.parse(JSON.stringify(memoLinks.value)),
-    [base + '/_meta/updatedAt']: Date.now()
-  };
-
-  await update(dbRef(db), payload);
-};
 
                 onMounted(() => {
   startGeoWeather();
@@ -888,7 +901,10 @@ const addItem = () => {
   );
 });
 
-                watch([days, expenses, packingList, setup, coupons, participantsStr, memoText, memoLinks], () => scheduleSave(), { deep: true });
+                watch([days, expenses, packingList, setup, coupons, participantsStr, memoText, memoLinks], () => {
+  if (isHydrating.value) return;
+  scheduleSave();
+}, { deep: true });
 watch(currentDayIdx, () => nextTick(() => { initItinerarySortable(); resizeAllTextareas(); }));
 watch(viewMode, (m) => {
   if (m === 'plan') nextTick(() => initItinerarySortable());
@@ -899,7 +915,7 @@ watch(viewMode, (m) => {
                     expenses, totalExpense, newExpense, addExpense, removeExpense, setup, showSetupModal, initTrip, 
                     packingList, newItemName, addPackItem, removePackItem, packingProgress, 
                     participantsStr, participants, paidByPerson, coupons, handleCouponUpload, removeCoupon, removeMemoLink, 
-                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod, newMemoLink, addMemoLink, currentUser, togglePackCheck, syncStatus, lastSyncedAt, lastSyncError
+                    memoText, syncTripName, itineraryListEl, openGoogleMap, memoLinks, openLink, weather, weatherEmoji, geo, refreshWeather, isIndexLoading, timeHHMM, timePeriod, newMemoLink, addMemoLink, currentUser, togglePackCheck, syncStatus, lastSyncedAt, lastSyncError, isHydrating,
                 };
             }
         }).mount('#app')
