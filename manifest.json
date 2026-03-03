@@ -16,7 +16,7 @@
       "src": "https://cdn.phototourl.com/uploads/2026-02-27-dbb392e6-6884-4b06-980b-2719bb6c5aa5.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }
